@@ -7,51 +7,72 @@ import "strings"
 import "advent_of_code/utils"
 
 func main() {
-  rawInput, err := utils.ReadInput("input.txt")
-  if err != nil {
-    log.Fatal(err)
-  }
+	rawInput, err := utils.ReadInput("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  input, err := parseInput(rawInput)
-  if err != nil {
-    log.Fatal(err)
-  }
+	input, err := parseInput(rawInput)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  resultA := sumChanges(input)
-  resultB := findTwiceFrequency(input)
+	resultA := applyFrequencies(input)
+	resultB := findTwiceFrequency(input)
 
-  fmt.Println("a:", resultA)
-  fmt.Println("b:", resultB)
+	fmt.Println("a:", resultA)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]int, error) {
-  changes := strings.Split(input, "\n")
+	changes := strings.Split(input, "\n")
 
-  new := make([]int, len(changes))
-  var err error
+	new := make([]int, len(changes))
+	var err error
 
-  for i, changeStr := range changes {
-    changeInt, e := strconv.Atoi(changeStr)
-    if e != nil {
-      err = e
-      break
-    }
+	for i, changeStr := range changes {
+		changeInt, e := strconv.Atoi(changeStr)
+		if e != nil {
+			err = e
+			break
+		}
 
-    new[i] = changeInt
-  }
+		new[i] = changeInt
+	}
 
-  return new, err
+	return new, err
 }
 
-func sumChanges(changes []int) int {
-  sum := 0
-  for _, change := range changes {
-    sum += change
-  }
+func applyFrequencies(changes []int) int {
+	frequency := 0
+	for _, change := range changes {
+		frequency += change
+	}
 
-  return sum
+	return frequency
 }
 
 func findTwiceFrequency(changes []int) int {
-  return 1
+	frequencies := make(map[int]bool)
+	frequency := 0
+	outerBreak := false
+
+	for {
+		for _, change := range changes {
+			frequency += change
+
+			if frequencies[frequency] == true {
+				outerBreak = true
+				break
+			}
+
+			frequencies[frequency] = true
+		}
+
+		if outerBreak == true {
+			break
+		}
+	}
+
+	return frequency
 }
