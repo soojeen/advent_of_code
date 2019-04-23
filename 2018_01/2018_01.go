@@ -7,7 +7,7 @@ import "strings"
 import "advent_of_code/utils"
 
 func main() {
-  rawInput, err := utils.ReadInput("rawInput.txt")
+  rawInput, err := utils.ReadInput("input.txt")
   if err != nil {
     log.Fatal(err)
   }
@@ -17,9 +17,11 @@ func main() {
     log.Fatal(err)
   }
 
-  result := sumChanges(input)
+  resultA := sumChanges(input)
+  resultB := findTwiceFrequency(input)
 
-  fmt.Println(result)
+  fmt.Println("a:", resultA)
+  fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]int, error) {
@@ -48,4 +50,8 @@ func sumChanges(changes []int) int {
   }
 
   return sum
+}
+
+func findTwiceFrequency(changes []int) int {
+  return 1
 }
