@@ -7,14 +7,14 @@ import "strings"
 import "advent_of_code/utils"
 
 func main() {
-	rawInput, err := utils.ReadInput("input.txt")
-	if err != nil {
-		log.Fatal(err)
+	rawInput, readError := utils.ReadInput("input.txt")
+	if readError != nil {
+		log.Fatal(readError)
 	}
 
-	input, err := parseInput(rawInput)
-	if err != nil {
-		log.Fatal(err)
+	input, parseError := parseInput(rawInput)
+	if parseError != nil {
+		log.Fatal(parseError)
 	}
 
 	resultA := applyFrequencies(input)
