@@ -14,10 +14,7 @@ func main() {
 	input := strings.Split(rawInput, "\n")
 
 	resultA := checksum(input)
-	// resultA := applyFrequencies(input)
-	// resultB := findTwiceFrequency(input)
 
-	// fmt.Println("a:", input)
 	fmt.Println("a:", resultA)
 	// fmt.Println("b:", resultB)
 }
