@@ -20,6 +20,7 @@ func main() {
 }
 
 func checksum(input []string) int {
+	// TODO: swap to concurrent go routines and use channels
 	twos := 0
 	threes := 0
 	for _, id := range input {
