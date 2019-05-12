@@ -25,34 +25,41 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resultA, resultB := claimOverlap(input)
+	resultA, resultB := resolveClaims(input)
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
 }
 
-func claimOverlap(claims []Claim) (int, int) {
-	type ClaimStatus struct {
-		claimed      bool
-		multiClaimed bool
-		claimants    []int
-	}
-
-	var grid [1000][1000]ClaimStatus
+func resolveClaims(claims []Claim) (int, int) {
+	var grid [1000][1000][]int
+	claimOverlaps := make(map[int]bool)
 	count := 0
 	noOverlapId := 0
 
 	for _, claim := range claims {
 		for x := claim.cornerX; x < (claim.cornerX + claim.width); x++ {
 			for y := claim.cornerY; y < (claim.cornerY + claim.height); y++ {
-				claimStatus := &grid[x][y]
-				if claimStatus.claimed && !claimStatus.multiClaimed {
-					claimStatus.multiClaimed = true
-					claimStatus.claimants = append(claimStatus.claimants, claim.id)
-					count++
-				} else if !claimStatus.claimed {
-					claimStatus.claimed = true
+				claimants := grid[x][y]
+
+				if (len(claimants) == 1) {
+					count ++
+				}
+
+				claimants = append(claimants, claim.id)
+				grid[x][y] = claimants
+
+				if len(claimants) > 1 {
+					for _, claimant := range claimants {
+						claimOverlaps[claimant] = true
+					}
 				}
 			}
+		}
+	}
+
+	for _, claim := range claims {
+		if !claimOverlaps[claim.id] {
+			noOverlapId = claim.id
 		}
 	}
 
