@@ -14,9 +14,9 @@ func main() {
 	input := strings.Split(rawInput, "\n")
 
 	resultA := checksumGo(input)
-
+	resultB := findCommonLetters(input)
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 // func checksum(input []string) int {
@@ -37,6 +37,46 @@ func main() {
 
 // 	return twos * threes
 // }
+
+func findCommonLetters(input []string) string {
+	var commonChars string
+	var isMatch bool
+
+	for idx, id1 := range input {
+		restOfInput := input[(idx + 1):]
+		for _, id2 := range restOfInput {
+			isMatch, commonChars = compare(id1, id2)
+			if isMatch {
+				break
+			}
+		}
+
+		if isMatch {
+			break
+		}
+	}
+
+	return commonChars
+}
+
+func compare(id1 string, id2 string) (bool, string) {
+	offChars := 0
+	offCharIndex := 0
+	for i := range id1 {
+		if id1[i] != id2[i] {
+			offChars++
+			offCharIndex = i
+		}
+	}
+
+	var commonChars string
+	if offChars == 1 {
+		commonChars = id1[:offCharIndex] + id1[(offCharIndex+1):]
+		return true, commonChars
+	}
+
+	return false, ""
+}
 
 func checksumGo(input []string) int {
 	type TwoThree struct {
