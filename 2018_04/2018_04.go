@@ -9,8 +9,8 @@ import "strings"
 import "advent_of_code/utils"
 
 type GuardShift struct {
-	date string
-	id string
+	date       string
+	id         string
 	isSleeping [60]bool
 }
 
@@ -27,15 +27,14 @@ func main() {
 	// fmt.Println("b:", resultB)
 }
 
-func mostSleepGuard (input []GuardShift) int {
+func mostSleepGuard(input []GuardShift) int {
 	fmt.Println("a:", input[0])
 
 	return 1
 }
 
-func parseInput (input []string) []GuardShift {
+func parseInput(input []string) []GuardShift {
 	sort.Strings(input)
 
-	
 	return []GuardShift{GuardShift{}}
 }
