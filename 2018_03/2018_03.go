@@ -6,7 +6,7 @@ import "strconv"
 import "strings"
 import "advent_of_code/utils"
 
-type Claim struct {
+type claim struct {
 	id      int
 	cornerX int
 	cornerY int
@@ -30,19 +30,19 @@ func main() {
 	fmt.Println("b:", resultB)
 }
 
-func resolveClaims(claims []Claim) (int, int) {
+func resolveClaims(claims []claim) (int, int) {
 	var grid [1000][1000][]int
 	claimOverlaps := make(map[int]bool)
 	count := 0
-	noOverlapId := 0
+	noOverlapID := 0
 
 	for _, claim := range claims {
 		for x := claim.cornerX; x < (claim.cornerX + claim.width); x++ {
 			for y := claim.cornerY; y < (claim.cornerY + claim.height); y++ {
 				claimants := grid[x][y]
 
-				if (len(claimants) == 1) {
-					count ++
+				if len(claimants) == 1 {
+					count++
 				}
 
 				claimants = append(claimants, claim.id)
@@ -59,16 +59,16 @@ func resolveClaims(claims []Claim) (int, int) {
 
 	for _, claim := range claims {
 		if !claimOverlaps[claim.id] {
-			noOverlapId = claim.id
+			noOverlapID = claim.id
 		}
 	}
 
-	return count, noOverlapId
+	return count, noOverlapID
 }
 
-func parseInput(input []string) ([]Claim, error) {
+func parseInput(input []string) ([]claim, error) {
 	var err error
-	claims := make([]Claim, len(input))
+	claims := make([]claim, len(input))
 
 	for i, rawClaim := range input {
 		claimParts := strings.Split(rawClaim, " ")
@@ -100,7 +100,7 @@ func parseInput(input []string) ([]Claim, error) {
 			break
 		}
 
-		claims[i] = Claim{i + 1, cornerX, cornerY, width, height}
+		claims[i] = claim{i + 1, cornerX, cornerY, width, height}
 	}
 
 	return claims, err
