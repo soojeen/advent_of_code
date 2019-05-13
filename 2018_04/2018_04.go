@@ -36,5 +36,24 @@ func mostSleepGuard(input []guardShift) int {
 func parseInput(input []string) []guardShift {
 	sort.Strings(input)
 
+	// currentGuard := ""
+	// currentDate := ""
+	for _, rawData := range input {
+		data := strings.Split(rawData, "] ")
+		rawDate, rawAction := data[0], data[1]
+		action := strings.Split(rawAction, " ")
+
+		switch action[0] {
+		case "Guard":
+			fmt.Println("g:", rawDate, action)
+			// currentGuard = "new guard"
+			// currentDate = "new date"
+		case "falls":
+			fmt.Println("f:", rawDate, action)
+		case "wakes":
+			fmt.Println("w:", rawDate, action)
+		}
+	}
+
 	return []guardShift{guardShift{}}
 }
