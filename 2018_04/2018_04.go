@@ -3,15 +3,17 @@ package main
 import "fmt"
 import "log"
 
-// import "strconv"
+import "strconv"
 import "sort"
+import "regexp"
 import "strings"
 import "advent_of_code/utils"
 
-type guardShift struct {
-	date       string
-	id         string
-	isSleeping [60]bool
+type guardSleep struct {
+	id         int
+	sleepStart int
+	wakeStart  int
+	sleepTime  int
 }
 
 func main() {
@@ -20,49 +22,126 @@ func main() {
 		log.Fatal(err)
 	}
 
-	input := parseInput(strings.Split(rawInput, "\n"))
+	input := parseGuardSleeps(strings.Split(rawInput, "\n"))
 
-	resultA := mostSleepGuard(input)
+	resultA := mostSleepTimeGuard(input)
+	resultB := mostFrequentSleepMinute(input)
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
-func mostSleepGuard(input []guardShift) int {
-	fmt.Println("a:", input[0])
+func mostSleepTimeGuard(input []guardSleep) int {
+	var totalSleepMax int
+	var maxGuardID int
+	totalGuardSleepTime := make(map[int]int)
 
-	return 1
-}
+	for _, guardSleep := range input {
+		totalGuardSleepTime[guardSleep.id] += guardSleep.sleepTime
 
-func parseInput(input []string) []guardShift {
-	sort.Strings(input)
-
-	// var guardShifts []guardShift
-	currentGuard := ""
-	currentDate := ""
-	// prevAction := ""
-
-	for _, rawData := range input {
-		data := strings.Split(rawData, "] ")
-		rawDate, rawAction := data[0], data[1]
-		action := strings.Split(rawAction, " ")
-
-		switch action[0] {
-		case "Guard":
-			fmt.Println("g:", rawDate, action)
-			if (currentGuard != "") && (currentDate != "") {
-				// guardShifts = append(guardShifts, guardShift{currentDate, currentGuard, isSleeping})
-				// insert complete guardShift into guardShifts
-			}
-			// currentGuard = "new guard"
-			// date - resolve correct date even if guard starts on prev date
-			// currentDate = "new date"
-
-		case "falls":
-			fmt.Println("f:", rawDate, action)
-		case "wakes":
-			fmt.Println("w:", rawDate, action)
+		currentSleepTotal := totalGuardSleepTime[guardSleep.id]
+		if currentSleepTotal > totalSleepMax {
+			totalSleepMax = currentSleepTotal
+			maxGuardID = guardSleep.id
 		}
 	}
 
-	return []guardShift{guardShift{}}
+	var minuteFrequency [60]int
+	var minuteCountMax int
+	var minuteMax int
+
+	for _, guardSleep := range input {
+		if guardSleep.id == maxGuardID {
+			for i := guardSleep.sleepStart; i < guardSleep.wakeStart; i++ {
+				minuteFrequency[i]++
+
+				if minuteFrequency[i] > minuteCountMax {
+					minuteCountMax = minuteFrequency[i]
+					minuteMax = i
+				}
+			}
+		}
+	}
+
+	return maxGuardID * minuteMax
+}
+
+func mostFrequentSleepMinute(input []guardSleep) int {
+	var minuteCountMax int
+	var minuteMax int
+	var guardID int
+	guardMinuteFrequency := make(map[int][60]int)
+
+	for _, guardSleep := range input {
+		minuteFrequency := guardMinuteFrequency[guardSleep.id]
+
+		for i := guardSleep.sleepStart; i < guardSleep.wakeStart; i++ {
+			minuteFrequency[i]++
+
+			if minuteFrequency[i] > minuteCountMax {
+				minuteCountMax = minuteFrequency[i]
+				minuteMax = i
+				guardID = guardSleep.id
+			}
+		}
+
+		guardMinuteFrequency[guardSleep.id] = minuteFrequency
+	}
+
+	return minuteMax * guardID
+}
+
+func parseGuardSleeps(input []string) []guardSleep {
+	var guardSleeps []guardSleep
+	var currentGuardID int
+	var currentSleepStart int
+
+	sort.Strings(input)
+
+	for _, inputLine := range input {
+		guardIDMatch, guardID := parseGuardID(inputLine)
+		if guardIDMatch {
+			currentGuardID = guardID
+			continue
+		}
+
+		sleepMatch, sleepStart := parseTime(inputLine, `falls`)
+		if sleepMatch {
+			currentSleepStart = sleepStart
+			continue
+		}
+
+		wakeMatch, wakeStart := parseTime(inputLine, `wakes`)
+		if wakeMatch {
+			sleepTime := wakeStart - currentSleepStart
+			newGuardSleep := guardSleep{currentGuardID, currentSleepStart, wakeStart, sleepTime}
+			guardSleeps = append(guardSleeps, newGuardSleep)
+		}
+	}
+
+	return guardSleeps
+}
+
+func parseGuardID(input string) (bool, int) {
+	guardIDRegexp := regexp.MustCompile(`#\d*`)
+
+	if !guardIDRegexp.MatchString(input) {
+		return false, 0
+	}
+
+	guardID, _ := strconv.Atoi(strings.Trim(guardIDRegexp.FindString(input), "#"))
+
+	return true, guardID
+}
+
+func parseTime(input string, regExpString string) (bool, int) {
+	regex := regexp.MustCompile(regExpString)
+	timeRegexp := regexp.MustCompile(`:\d\d`)
+
+	if !regex.MatchString(input) {
+		return false, 0
+	}
+
+	time, _ := strconv.Atoi(strings.Trim(timeRegexp.FindString(input), ":"))
+
+	return true, time
 }
