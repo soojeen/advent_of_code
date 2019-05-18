@@ -6,7 +6,7 @@ import "log"
 
 // import "strconv"
 // import "sort"
-// import "regexp"
+import "regexp"
 import "strings"
 import "advent_of_code/utils"
 
@@ -16,10 +16,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resultA := len(reactPolymers(rawInput))
-	// resultB := mostFrequentSleepMinute(input)
-	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	// resultA := len(reactPolymers(rawInput))
+	resultB := shortestPolymer(rawInput)
+	// fmt.Println("a:", resultA)
+	fmt.Println("b:", resultB)
 }
 
 func reactPolymers(input string) string {
@@ -56,6 +56,36 @@ func reactPolymers(input string) string {
 	}
 
 	return strings.Join(polymerBuffer, "")
+}
+
+func shortestPolymer(input string) int {
+	alphabet := strings.Split("abcdefghijklmnopqrstuvwxyz", "")
+	minPolymer := len(input)
+	c := make(chan int, len(alphabet))
+
+	for _, letter := range alphabet {
+		letter := letter
+		go func() {
+			regexString := strings.Join([]string{letter, "|", strings.ToUpper(letter)}, "")
+			regex := regexp.MustCompile(regexString)
+
+			polymer := regex.ReplaceAllString(input, "")
+
+			result := len(reactPolymers(polymer))
+
+			c <- result
+		}()
+	}
+
+	for i := 0; i < len(alphabet); i++ {
+		result := <-c
+
+		if result < minPolymer {
+			minPolymer = result
+		}
+	}
+
+	return minPolymer
 }
 
 func reactPolymer(letter1 string, letter2 string) bool {
