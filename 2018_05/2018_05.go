@@ -1,11 +1,7 @@
 package main
 
 import "fmt"
-
 import "log"
-
-// import "strconv"
-// import "sort"
 import "regexp"
 import "strings"
 import "advent_of_code/utils"
@@ -16,9 +12,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// resultA := len(reactPolymers(rawInput))
+	resultA := len(reactPolymers(rawInput))
 	resultB := shortestPolymer(rawInput)
-	// fmt.Println("a:", resultA)
+	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
 }
 
