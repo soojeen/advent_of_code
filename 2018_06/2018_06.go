@@ -18,7 +18,7 @@ func main() {
 
 	input := parsePoints(rawInput)
 
-	resultA := maxAreaPoints(input)
+	resultA := maxArea(input)
 	// resultB := shortestPolymer(rawInput)
 	fmt.Println("a:", resultA)
 	// fmt.Println("b:", resultB)
@@ -42,7 +42,7 @@ func parsePoints(input string) []point {
 	return points
 }
 
-func maxAreaPoints(pointsInput []point) int {
+func maxArea(pointsInput []point) int {
 	minPoint := pointsInput[0]
 	maxPoint := pointsInput[0]
 
@@ -67,10 +67,10 @@ func maxAreaPoints(pointsInput []point) int {
 	for x := minPoint.x; x <= maxPoint.x; x++ {
 		for y := minPoint.y; y <= maxPoint.y; y++ {
 			nearestDistance := -1
-			nearestInputPoint := point{}
+			nearestInputPoint := point{-1, -1}
 
 			for _, pointInput := range pointsInput {
-				distance := abs(pointInput.x-x) + abs(pointInput.y-y)
+				distance := absolute(x-pointInput.x) + absolute(y-pointInput.y)
 
 				if distance < nearestDistance || nearestDistance == -1 {
 					nearestDistance = distance
@@ -98,7 +98,7 @@ func maxAreaPoints(pointsInput []point) int {
 	return maxArea
 }
 
-func abs(value int) int {
+func absolute(value int) int {
 	if value < 0 {
 		return -value
 	}
