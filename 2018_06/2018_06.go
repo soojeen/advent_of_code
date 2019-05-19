@@ -5,11 +5,6 @@ import "log"
 import "strings"
 import "advent_of_code/utils"
 
-type point struct {
-	x int
-	y int
-}
-
 func main() {
 	rawInput, err := utils.ReadInput("input.txt")
 	if err != nil {
@@ -18,10 +13,14 @@ func main() {
 
 	input := parsePoints(rawInput)
 
-	resultA := maxArea(input)
-	// resultB := shortestPolymer(rawInput)
+	resultA, resultB := maxArea(input)
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
+}
+
+type point struct {
+	x int
+	y int
 }
 
 func parsePoints(input string) []point {
@@ -42,7 +41,7 @@ func parsePoints(input string) []point {
 	return points
 }
 
-func maxArea(pointsInput []point) int {
+func maxArea(pointsInput []point) (int, int) {
 	minPoint := pointsInput[0]
 	maxPoint := pointsInput[0]
 
@@ -63,11 +62,13 @@ func maxArea(pointsInput []point) int {
 
 	infinitePoints := make(map[point]bool)
 	pointAreas := make(map[point]int)
+	areaB := 0
 
 	for x := minPoint.x; x <= maxPoint.x; x++ {
 		for y := minPoint.y; y <= maxPoint.y; y++ {
 			nearestDistance := -1
 			nearestInputPoint := point{-1, -1}
+			sumDistanceToInputs := 0
 
 			for _, pointInput := range pointsInput {
 				distance := absolute(x-pointInput.x) + absolute(y-pointInput.y)
@@ -78,6 +79,8 @@ func maxArea(pointsInput []point) int {
 				} else if distance == nearestDistance {
 					nearestInputPoint = point{-1, -1}
 				}
+
+				sumDistanceToInputs += distance
 			}
 
 			if x == minPoint.x || y == minPoint.y || x == maxPoint.x || y == maxPoint.y {
@@ -85,6 +88,10 @@ func maxArea(pointsInput []point) int {
 			}
 
 			pointAreas[nearestInputPoint]++
+
+			if sumDistanceToInputs < 10000 {
+				areaB++
+			}
 		}
 	}
 
@@ -95,7 +102,7 @@ func maxArea(pointsInput []point) int {
 		}
 	}
 
-	return maxArea
+	return maxArea, areaB
 }
 
 func absolute(value int) int {
