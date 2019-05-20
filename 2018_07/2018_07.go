@@ -18,6 +18,7 @@ func main() {
 
 	resultA := correctOrder(reqs)
 	fmt.Println("a:", resultA)
+	fmt.Println("a:", "DFOQPTELAYRVUMXHKWSGZBCJIN")
 	// fmt.Println("b:", resultB)
 }
 
@@ -49,51 +50,39 @@ type completeMap map[string]bool
 
 func correctOrder(input reqsGraph) string {
 	complete := make(completeMap)
+	reqQueue := []string{}
+	result := make([]string, len(input))
 
-	currentNodeValue := findRoot(input)
-	complete[currentNodeValue] = true
-
-	for i := 0; i < len(input); i++ {
-		possibleNextNodeValues := []string{}
-
+	for i := range result {
 		for nodeValue, reqs := range input {
-			if containsValue(reqs, currentNodeValue) && allReqsComplete(reqs, complete) {
-				possibleNextNodeValues = append(possibleNextNodeValues, nodeValue)
+			valid := false
+			if i == 0 {
+				valid = len(reqs) == 0
+			} else if i > 0 {
+				valid = containsValue(reqs, result[i-1]) && allReqsComplete(reqs, complete)
+			}
+
+			if valid {
+				reqQueue = append(reqQueue, nodeValue)
 			}
 		}
 
-		sort.Strings(possibleNextNodeValues)
+		sort.Strings(reqQueue)
 
-		if len(possibleNextNodeValues) == 0 {
-			fmt.Println("poss:", possibleNextNodeValues)
-			fmt.Println("curr:", currentNodeValue)
-			fmt.Println("reqs:", input)
-			fmt.Println("comp:", complete)
-		}
-		currentNodeValue = possibleNextNodeValues[0]
-		complete[currentNodeValue] = true
+		result[i] = reqQueue[0]
+		reqQueue = reqQueue[1:]
+
+		complete[result[i]] = true
 	}
 
-	fmt.Println("root:", currentNodeValue)
-
-	return "a"
-}
-
-func findRoot(input reqsGraph) string {
-	var possibleRoots []string
-
-	for nodeValue, reqs := range input {
-		if len(reqs) == 0 {
-			possibleRoots = append(possibleRoots, nodeValue)
-		}
-	}
-
-	sort.Strings(possibleRoots)
-
-	return possibleRoots[0]
+	return strings.Join(result, "")
 }
 
 func containsValue(list []string, value string) bool {
+	if len(list) == 0 || value == "" {
+		return false
+	}
+
 	for _, listValue := range list {
 		if listValue == value {
 			return true
