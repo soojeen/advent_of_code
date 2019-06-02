@@ -50,22 +50,25 @@ func parseTreeSum(tree []int) treePartial {
 		values = append(values, childResult.value)
 	}
 
-	value := sum(subTree[:metaDataLength])
+	metaDatas := subTree[:metaDataLength]
+	value := sum(metaDatas)
 	metaDataSum += value
 
 	if childrenLength == 0 {
 		return treePartial{metaDataSum, value, subTree[metaDataLength:]}
-	} else {
-		valueSubtotal := 0
-
-		for _, metaDataValue := range subTree[:metaDataLength] {
-			if metaDataValue-1 < len(values) {
-				valueSubtotal += values[metaDataValue-1]
-			}
-		}
-
-		return treePartial{metaDataSum, valueSubtotal, subTree[metaDataLength:]}
 	}
+
+	valueSubtotal := 0
+
+	for _, metaDataValue := range metaDatas {
+		valuesIndex := metaDataValue - 1
+
+		if valuesIndex < len(values) {
+			valueSubtotal += values[valuesIndex]
+		}
+	}
+
+	return treePartial{metaDataSum, valueSubtotal, subTree[metaDataLength:]}
 }
 
 func sum(addends []int) int {
