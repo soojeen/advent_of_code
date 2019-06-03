@@ -14,8 +14,8 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	// rawInput := "9 players; last marble is worth 25 points"
-	rawInput := "10 players; last marble is worth 1618 points"
+	rawInput := "9 players; last marble is worth 25 points"
+	// rawInput := "10 players; last marble is worth 1618 points"
 	// rawInput := "13 players; last marble is worth 7999 points"
 	// rawInput := "17 players; last marble is worth 1104 points"
 	// rawInput := "21 players; last marble is worth 6111 points"
@@ -52,7 +52,7 @@ type gameMarbles struct {
 func (g *gameMarbles) place(value int) {
 	lastIndex := len(g.marbles) - 1
 
-	if g.currentIndex == lastIndex-1 || len(g.marbles) == 1 {
+	if g.currentIndex == lastIndex-1 || g.currentIndex == 0 {
 		g.marbles = append(g.marbles, value)
 		g.currentIndex = len(g.marbles) - 1
 	} else {
@@ -72,12 +72,17 @@ func (g *gameMarbles) specialPlace() int {
 	removeIndex := g.currentIndex - 7
 
 	if removeIndex < 0 {
-		removeIndex = len(g.marbles) - 1 + removeIndex
+		removeIndex = len(g.marbles) + removeIndex
+
 	}
 
 	removeValue := g.marbles[removeIndex]
 
 	lastIndex := len(g.marbles) - 1
+	if removeIndex >= lastIndex {
+		fmt.Println("a:", "warning")
+
+	}
 	copy(g.marbles[removeIndex:], g.marbles[removeIndex+1:])
 	g.marbles[lastIndex] = 0
 	g.marbles = g.marbles[:lastIndex]
@@ -87,33 +92,29 @@ func (g *gameMarbles) specialPlace() int {
 	return removeValue
 }
 
-type player struct {
-	id    int
-	score int
-}
 type gamePlayers struct {
 	current int
-	players []player
+	scores  []int
 }
 
 func (g *gamePlayers) next() {
-	if len(g.players) == g.current {
-		g.current = 1
+	if len(g.scores)-1 == g.current {
+		g.current = 0
 	}
 
 	g.current++
 }
 
 func (g *gamePlayers) score(points int) {
-	g.players[g.current-1].score += points
+	g.scores[g.current] += points
 }
 
 func (g *gamePlayers) highScore() int {
 	result := 0
 
-	for _, player := range g.players {
-		if player.score > result {
-			result = player.score
+	for _, score := range g.scores {
+		if score > result {
+			result = score
 		}
 	}
 
@@ -133,18 +134,11 @@ func winningScore(gameInput gameInput) int {
 		}
 
 		gamePlayers.next()
-
 	}
 
 	return gamePlayers.highScore()
 }
 
 func initializePlayers(totalPlayers int) gamePlayers {
-	players := make([]player, totalPlayers)
-
-	for i := range players {
-		players[i].id = i + 1
-	}
-
-	return gamePlayers{1, players}
+	return gamePlayers{0, make([]int, totalPlayers)}
 }
