@@ -1,5 +1,6 @@
 package main
 
+import "container/list"
 import "fmt"
 import "log"
 import "strconv"
@@ -15,7 +16,7 @@ func main() {
 	input := parseInput(rawInput)
 
 	resultA := winningScore(input, 1)
-	resultB := winningScore(input, 10)
+	resultB := winningScore(input, 100)
 
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
@@ -36,51 +37,41 @@ func parseInput(rawInput string) gameInput {
 }
 
 type gameMarbles struct {
-	currentIndex int
-	marbles      []int
+	current *list.Element
+	marbles *list.List
 }
 
 func (g *gameMarbles) place(value int) {
-	lastIndex := len(g.marbles) - 1
+	insertAfter := g.current.Next()
 
-	if g.currentIndex == lastIndex-1 || g.currentIndex == 0 {
-		g.marbles = append(g.marbles, value)
-		g.currentIndex = len(g.marbles) - 1
-	} else {
-		insertIndex := 1
-		if g.currentIndex != lastIndex {
-			insertIndex = g.currentIndex + 2
-		}
-
-		g.marbles = append(g.marbles, 0)
-		copy(g.marbles[insertIndex+1:], g.marbles[insertIndex:])
-		g.marbles[insertIndex] = value
-		g.currentIndex = insertIndex
+	if insertAfter == nil {
+		insertAfter = g.marbles.Front()
 	}
+
+	g.current = g.marbles.InsertAfter(value, insertAfter)
 }
 
 func (g *gameMarbles) specialPlace() int {
-	removeIndex := g.currentIndex - 7
+	const special = 7
+	specialMarble := g.current
 
-	if removeIndex < 0 {
-		removeIndex = len(g.marbles) + removeIndex
+	for i := 0; i < special; i++ {
+		specialMarble = specialMarble.Prev()
 
+		if specialMarble == nil {
+			specialMarble = g.marbles.Back()
+		}
 	}
 
-	removeValue := g.marbles[removeIndex]
-
-	lastIndex := len(g.marbles) - 1
-	if removeIndex >= lastIndex {
-		fmt.Println("a:", "warning")
-
+	// track new current before Remove
+	g.current = specialMarble.Next()
+	if g.current == nil {
+		g.current = g.marbles.Front()
 	}
-	copy(g.marbles[removeIndex:], g.marbles[removeIndex+1:])
-	g.marbles[lastIndex] = 0
-	g.marbles = g.marbles[:lastIndex]
 
-	g.currentIndex = removeIndex
+	removeValue := g.marbles.Remove(specialMarble)
 
-	return removeValue
+	return removeValue.(int)
 }
 
 type gamePlayers struct {
@@ -114,12 +105,9 @@ func (g *gamePlayers) highScore() int {
 
 func winningScore(gameInput gameInput, multiplier int) int {
 	gamePlayers := initializePlayers(gameInput.players)
-	gameMarbles := gameMarbles{0, make([]int, 1)}
+	gameMarbles := initializeMarbles()
 
 	for i := 1; i <= gameInput.points*multiplier; i++ {
-		if i%gameInput.points == 0 {
-			fmt.Println("current", i)
-		}
 		if i%gameInput.special == 0 {
 			special := gameMarbles.specialPlace()
 			gamePlayers.score(i + special)
@@ -135,4 +123,11 @@ func winningScore(gameInput gameInput, multiplier int) int {
 
 func initializePlayers(totalPlayers int) gamePlayers {
 	return gamePlayers{0, make([]int, totalPlayers)}
+}
+
+func initializeMarbles() gameMarbles {
+	marbles := list.New()
+	current := marbles.PushBack(0)
+
+	return gameMarbles{current, marbles}
 }
