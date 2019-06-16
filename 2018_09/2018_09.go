@@ -1,33 +1,24 @@
 package main
 
 import "fmt"
-
-// import "log"
+import "log"
 import "strconv"
 import "strings"
-
-// import "advent_of_code/utils"
+import "advent_of_code/utils"
 
 func main() {
-	// rawInput, err := utils.ReadInput("input.txt")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	rawInput := "9 players; last marble is worth 25 points"
-	// rawInput := "10 players; last marble is worth 1618 points"
-	// rawInput := "13 players; last marble is worth 7999 points"
-	// rawInput := "17 players; last marble is worth 1104 points"
-	// rawInput := "21 players; last marble is worth 6111 points"
-	// rawInput := "30 players; last marble is worth 5807 points"
+	rawInput, err := utils.ReadInput("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	input := parseInput(rawInput)
 
-	resultA := winningScore(input)
-	// result := parseTreeSum(input)
+	resultA := winningScore(input, 1)
+	resultB := winningScore(input, 10)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", result.value)
+	fmt.Println("b:", resultB)
 }
 
 type gameInput struct {
@@ -100,9 +91,9 @@ type gamePlayers struct {
 func (g *gamePlayers) next() {
 	if len(g.scores)-1 == g.current {
 		g.current = 0
+	} else {
+		g.current++
 	}
-
-	g.current++
 }
 
 func (g *gamePlayers) score(points int) {
@@ -121,11 +112,14 @@ func (g *gamePlayers) highScore() int {
 	return result
 }
 
-func winningScore(gameInput gameInput) int {
+func winningScore(gameInput gameInput, multiplier int) int {
 	gamePlayers := initializePlayers(gameInput.players)
 	gameMarbles := gameMarbles{0, make([]int, 1)}
 
-	for i := 1; i <= gameInput.points; i++ {
+	for i := 1; i <= gameInput.points*multiplier; i++ {
+		if i%gameInput.points == 0 {
+			fmt.Println("current", i)
+		}
 		if i%gameInput.special == 0 {
 			special := gameMarbles.specialPlace()
 			gamePlayers.score(i + special)
