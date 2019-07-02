@@ -103,17 +103,21 @@ func parseInput(rawInput string) lights {
 	return lights{lightsList}
 }
 
+func diffStop(diff int) bool {
+	const diffThreshold = 100
+
+	return (diff < 0 && diff > -diffThreshold) || (diff > 0 && diff < diffThreshold)
+}
+
 func mainLights(lights lights) {
 	const diffThreshold = 100
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for i := 0; ; i++ {
 		minX, minY, maxX, maxY := lights.minMax()
-		xDiff := minX - maxX
-		xDiffStop := (xDiff < 0 && xDiff > -diffThreshold) || (xDiff > 0 && xDiff < diffThreshold)
 
-		yDiff := minY - maxY
-		yDiffStop := (yDiff < 0 && yDiff > -diffThreshold) || (yDiff > 0 && yDiff < diffThreshold)
+		xDiffStop := diffStop(minX - maxX)
+		yDiffStop := diffStop(minY - maxY)
 
 		if xDiffStop && yDiffStop {
 			for j := i; ; j++ {
