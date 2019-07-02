@@ -63,16 +63,6 @@ func (l *lights) move() {
 	}
 }
 
-func absolute(valA int, valB int) int {
-	diff := valA - valB
-
-	if diff < 0 {
-		return -diff
-	}
-
-	return diff
-}
-
 func (l *lights) draw() {
 	minX, minY, maxX, maxY := l.minMax()
 
@@ -119,12 +109,6 @@ func parseInput(rawInput string) lights {
 	return lights{lightsList}
 }
 
-func diffStop(diff int) bool {
-	const diffThreshold = 100
-
-	return (diff < 0 && diff > -diffThreshold) || (diff > 0 && diff < diffThreshold)
-}
-
 func mainLights(lights lights) {
 	const diffThreshold = 100
 	scanner := bufio.NewScanner(os.Stdin)
@@ -132,8 +116,8 @@ func mainLights(lights lights) {
 	for i := 0; ; i++ {
 		minX, minY, maxX, maxY := lights.minMax()
 
-		xDiffStop := diffStop(minX - maxX)
-		yDiffStop := diffStop(minY - maxY)
+		xDiffStop := absolute(minX, maxX) < diffThreshold
+		yDiffStop := absolute(minY, maxY) < diffThreshold
 
 		if xDiffStop && yDiffStop {
 			for j := i; ; j++ {
@@ -146,4 +130,14 @@ func mainLights(lights lights) {
 
 		lights.move()
 	}
+}
+
+func absolute(valA int, valB int) int {
+	diff := valA - valB
+
+	if diff < 0 {
+		return -diff
+	}
+
+	return diff
 }
