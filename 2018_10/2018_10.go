@@ -63,19 +63,35 @@ func (l *lights) move() {
 	}
 }
 
+func absolute(valA int, valB int) int {
+	diff := valA - valB
+
+	if diff < 0 {
+		return -diff
+	}
+
+	return diff
+}
+
 func (l *lights) draw() {
-	const inputLen = 391
+	minX, minY, maxX, maxY := l.minMax()
 
-	mapping := [inputLen][inputLen]string{}
+	mapping := make([][]string, absolute(minY, maxY)+2)
+	for y := range mapping {
+		row := make([]string, absolute(minX, maxX)+2)
 
-	for y, row := range mapping {
 		for x := range row {
-			mapping[y][x] = "."
+			row[x] = "."
 		}
+
+		mapping[y] = row
 	}
 
 	for _, light := range l.lights {
-		mapping[light.position[1]][light.position[0]] = "#"
+		xPos := light.position[0] - minX
+		yPos := light.position[1] - minY
+
+		mapping[yPos][xPos] = "#"
 	}
 
 	for _, row := range mapping {
