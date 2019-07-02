@@ -5,7 +5,6 @@ import "fmt"
 import "log"
 import "os"
 import "regexp"
-import "sort"
 import "strconv"
 import "strings"
 import "advent_of_code/utils"
@@ -27,32 +26,44 @@ type light struct {
 }
 
 type lights struct {
-	lights     []light
-	positionsX []int
-	positionsY []int
+	lights []light
+}
+
+func (l *lights) minMax() (int, int, int, int) {
+	initialLight := l.lights[0]
+	maxX := initialLight.position[0]
+	maxY := initialLight.position[1]
+	minX := maxX
+	minY := maxY
+
+	for _, light := range l.lights {
+		xPos := light.position[0]
+		yPos := light.position[1]
+
+		if xPos > maxX {
+			maxX = xPos
+		} else if xPos < minX {
+			minX = xPos
+		}
+
+		if yPos > maxY {
+			maxY = yPos
+		} else if yPos < minY {
+			minY = yPos
+		}
+	}
+
+	return minX, minY, maxX, maxY
 }
 
 func (l *lights) move() {
-	var positionsX []int
-	var positionsY []int
-
-	for i := range l.lights {
-		l.lights[i].position[0] += l.lights[i].velocity[0]
-		l.lights[i].position[1] += l.lights[i].velocity[1]
-
-		positionsX = append(positionsX, l.lights[i].position[0])
-		positionsY = append(positionsY, l.lights[i].position[1])
+	for i, light := range l.lights {
+		l.lights[i].position[0] += light.velocity[0]
+		l.lights[i].position[1] += light.velocity[1]
 	}
-
-	sort.Ints(positionsX)
-	sort.Ints(positionsY)
-
-	l.positionsX = positionsX
-	l.positionsY = positionsY
 }
 
 func (l *lights) draw() {
-	const margin = 10
 	const inputLen = 391
 
 	mapping := [inputLen][inputLen]string{}
@@ -77,8 +88,6 @@ func parseInput(rawInput string) lights {
 	lines := strings.Split(rawInput, "\n")
 
 	lightsList := make([]light, len(lines))
-	var positionsX []int
-	var positionsY []int
 
 	for i, line := range lines {
 		match := r.FindStringSubmatch(line)
@@ -89,27 +98,21 @@ func parseInput(rawInput string) lights {
 		velocityY, _ := strconv.Atoi(strings.TrimSpace(match[4]))
 
 		lightsList[i] = light{[2]int{positionX, positionY}, [2]int{velocityX, velocityY}}
-
-		positionsX = append(positionsX, positionX)
-		positionsY = append(positionsY, positionY)
 	}
 
-	sort.Ints(positionsX)
-	sort.Ints(positionsY)
-
-	return lights{lightsList, positionsX, positionsY}
+	return lights{lightsList}
 }
 
 func mainLights(lights lights) {
 	const diffThreshold = 100
-	lightsLen := len(lights.lights)
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for i := 0; ; i++ {
-		xDiff := lights.positionsX[0] - lights.positionsX[lightsLen-1]
+		minX, minY, maxX, maxY := lights.minMax()
+		xDiff := minX - maxX
 		xDiffStop := (xDiff < 0 && xDiff > -diffThreshold) || (xDiff > 0 && xDiff < diffThreshold)
 
-		yDiff := lights.positionsY[0] - lights.positionsY[lightsLen-1]
+		yDiff := minY - maxY
 		yDiffStop := (yDiff < 0 && yDiff > -diffThreshold) || (yDiff > 0 && yDiff < diffThreshold)
 
 		if xDiffStop && yDiffStop {
