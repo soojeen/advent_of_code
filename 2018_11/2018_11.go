@@ -10,9 +10,20 @@ import "fmt"
 // import "strings"
 // import "advent_of_code/utils"
 
+const gridSize = 300
+
+type grid [gridSize][gridSize]int
+
 func main() {
 	input := 1955
-	fmt.Println(input)
 
-	// mainLights(input)
+	grid := generatePowerLevels(input)
+	fmt.Println(input)
+	fmt.Println(grid[0])
+}
+
+func generatePowerLevels(input int) grid {
+	grid := [gridSize][gridSize]int{}
+
+	return grid
 }
