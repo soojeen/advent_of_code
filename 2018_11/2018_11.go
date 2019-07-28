@@ -1,27 +1,26 @@
 package main
 
-// import "bufio"
 import "fmt"
 
-// import "log"
-// import "os"
-// import "regexp"
-// import "strconv"
-// import "strings"
-// import "advent_of_code/utils"
+const gridSize = 300
+
+type largest struct {
+	sum  int
+	x    int
+	y    int
+	size int
+}
 
 func main() {
-	const gridSize = 300
 	input := 1955
-	// input := 18
 
-	grid := generatePowerLevels(gridSize, input)
+	grid := generatePowerLevels(input)
 
 	resultA := findLargest(grid)
 	fmt.Println(resultA)
 }
 
-func generatePowerLevels(gridSize int, input int) [][]int {
+func generatePowerLevels(input int) [][]int {
 	grid := make([][]int, gridSize)
 
 	for x := 0; x < gridSize; x++ {
@@ -33,28 +32,41 @@ func generatePowerLevels(gridSize int, input int) [][]int {
 	return grid
 }
 
-func findLargest(grid [][]int) [2]int {
-	type largest struct {
-		sum int
-		x   int
-		y   int
+func findLargest(grid [][]int) largest {
+	c := make(chan largest, gridSize)
+
+	for i := 0; i <= gridSize; i++ {
+		i := i + 1
+
+		go func() {
+			var large largest
+			upperBound := len(grid) - i
+
+			fmt.Println(i)
+			for x := 0; x < upperBound; x++ {
+				for y := 0; y < upperBound; y++ {
+					sum := powerSum(grid, x, y, i)
+
+					if sum > large.sum {
+						large = largest{sum, x, y, i}
+					}
+				}
+			}
+
+			c <- large
+		}()
 	}
 
-	const interfaceSize = 3
-	var large = largest{-46, 0, 0}
-	upperBound := len(grid) - interfaceSize
+	var mostLargest largest
+	for j := 0; j <= gridSize; j++ {
+		large := <-c
 
-	for x := 0; x < upperBound; x++ {
-		for y := 0; y < upperBound; y++ {
-			sum := powerSum(grid, x, y)
-
-			if sum > large.sum {
-				large = largest{sum, x, y}
-			}
+		if large.sum > mostLargest.sum {
+			mostLargest = large
 		}
 	}
 
-	return [2]int{large.x, large.y}
+	return mostLargest
 }
 
 func getPowerLevel(x int, y int, input int) int {
@@ -78,11 +90,11 @@ func hundredsDigit(number int) int {
 	return number % 10
 }
 
-func powerSum(grid [][]int, x int, y int) int {
+func powerSum(grid [][]int, x int, y int, interfaceSize int) int {
 	sum := 0
 
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
+	for i := 0; i < interfaceSize; i++ {
+		for j := 0; j < interfaceSize; j++ {
 			sum = sum + grid[x+i][y+j]
 		}
 	}
