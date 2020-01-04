@@ -12,14 +12,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pathA, pathB := parseInput(rawInput)
+	wirePaths := parseInput(rawInput)
 
-	resultA := process(pathA, pathB)
+	gridState := buildGrid(wirePaths)
+	resultA, resultB := process(gridState)
 
 	fmt.Println(resultA)
+	fmt.Println(resultB)
 }
 
-func parseInput(rawInput string) ([]string, []string) {
+func parseInput(rawInput string) [][]string {
 	rawWirePaths := strings.Split(rawInput, "\n")
 	wirePaths := make([][]string, 2)
 
@@ -27,30 +29,30 @@ func parseInput(rawInput string) ([]string, []string) {
 		wirePaths[i] = strings.Split(rawWirePath, ",")
 	}
 
-	return wirePaths[0], wirePaths[1]
+	return wirePaths
 }
 
 type point struct {
 	x, y int
 }
 
-type pointContent struct {
-	a, b bool
-}
+type pointContent [2]int
 
-type gridState map[point]map[rune]bool
+type gridState map[point]pointContent
 
-func process(pathA []string, pathB []string) int {
+func buildGrid(paths [][]string) gridState {
 	gridState := make(gridState)
 
-	gridState = tracePath(pathA, 'a', gridState)
-	gridState = tracePath(pathB, 'b', gridState)
+	for i, path := range paths {
+		gridState = tracePath(path, i, gridState)
+	}
 
-	return findResult(gridState)
+	return gridState
 }
 
-func tracePath(path []string, gridKey rune, gridState gridState) gridState {
+func tracePath(path []string, pointContentKey int, gridState gridState) gridState {
 	current := point{0, 0}
+	stepCount := 0
 
 	for _, step := range path {
 		direction, distance := parseStep(step)
@@ -68,11 +70,12 @@ func tracePath(path []string, gridKey rune, gridState gridState) gridState {
 				fmt.Println("No Direction")
 			}
 
+			stepCount++
 			currentPoint := gridState[current]
-			if len(currentPoint) == 0 {
-				currentPoint = make(map[rune]bool)
+			// ignore multiple contacts and keep lowest step count
+			if currentPoint[pointContentKey] == 0 {
+				currentPoint[pointContentKey] = stepCount
 			}
-			currentPoint[gridKey] = true
 			gridState[current] = currentPoint
 		}
 	}
@@ -90,23 +93,30 @@ func parseStep(rawStep string) (string, int) {
 	return step[0], distance
 }
 
-func findResult(gridState gridState) int {
-	intersections := make([]point, 0)
+func process(gridState gridState) (int, int) {
+	intersectionPoints := make([]point, 0)
 
-	for key, value := range gridState {
-		if value['a'] && value['b'] {
-			intersections = append(intersections, key)
+	for point, pointContent := range gridState {
+		if pointContent[0] > 0 && pointContent[1] > 0 {
+			intersectionPoints = append(intersectionPoints, point)
 		}
 	}
 
-	closestDistance := -1
+	var closestManhattan int
+	var closestSteps int
 
-	for _, intersection := range intersections {
-		distance := intersection.x + intersection.y
-		if closestDistance == -1 || distance < closestDistance {
-			closestDistance = distance
+	for i, point := range intersectionPoints {
+		manhattan := point.x + point.y
+		if i == 0 || manhattan < closestManhattan {
+			closestManhattan = manhattan
+		}
+
+		pointContent := gridState[point]
+		steps := pointContent[0] + pointContent[1]
+		if i == 0 || steps < closestSteps {
+			closestSteps = steps
 		}
 	}
 
-	return closestDistance
+	return closestManhattan, closestSteps
 }
