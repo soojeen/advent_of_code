@@ -68,13 +68,15 @@ func hasValidAdjacent(password int) bool {
 	passwordLetters := strings.Split(passwordString, "")
 
 	hasValidRepeat := false
-	repeatCount := 1
+	repeatCount := 0
 
 	for i, letter := range passwordLetters {
-		eol := i == len(passwordLetters)-1
+		endOfLine := i == len(passwordLetters)-1
+		isValidRepeatCount := repeatCount == 1
+		isEmptyRepeatCount := repeatCount == 0
 
-		if eol {
-			hasValidRepeat = repeatCount == 2
+		if endOfLine {
+			hasValidRepeat = isValidRepeatCount
 			break
 		}
 
@@ -85,17 +87,17 @@ func hasValidAdjacent(password int) bool {
 			continue
 		}
 
-		if !nextLetterRepeats && repeatCount == 1 {
+		if !nextLetterRepeats && isEmptyRepeatCount {
 			continue
 		}
 
-		if repeatCount == 2 {
+		if isValidRepeatCount {
 			hasValidRepeat = true
 			break
 		}
 
-		if repeatCount != 2 {
-			repeatCount = 1
+		if !isValidRepeatCount {
+			repeatCount = 0
 		}
 
 	}
