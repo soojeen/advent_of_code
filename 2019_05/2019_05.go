@@ -14,8 +14,11 @@ func main() {
 
 	program := parseInput(rawInput)
 
-	resultA := processA(program)
-	fmt.Println(resultA)
+	// resultA := process(program, 1)
+	// fmt.Println(resultA)
+
+	resultB := process(program, 5)
+	fmt.Println(resultB)
 }
 
 func parseInput(rawInput string) []int {
@@ -70,21 +73,37 @@ func (c *computer) parseInstruction() instruction {
 	rawOpCode := c.program[c.currentPosition]
 	opCode := rawOpCode % 100
 
-	if opCode == 99 {
-		return instruction{opCode, rawOpCode, []int{}}
-	}
-
-	if opCode == 3 || opCode == 4 {
+	switch opCode {
+	case 1:
+		fallthrough
+	case 2:
+		fallthrough
+	case 7:
+		fallthrough
+	case 8:
+		rawParameters := make([]int, 3)
+		for i := range rawParameters {
+			rawParameters[i] = c.program[c.currentPosition+i+1]
+		}
+		return instruction{opCode, rawOpCode, rawParameters}
+	case 3:
+		fallthrough
+	case 4:
 		rawParameters := []int{c.program[c.currentPosition+1]}
 		return instruction{opCode, rawOpCode, rawParameters}
+	case 5:
+		fallthrough
+	case 6:
+		rawParameters := make([]int, 2)
+		for i := range rawParameters {
+			rawParameters[i] = c.program[c.currentPosition+i+1]
+		}
+		return instruction{opCode, rawOpCode, rawParameters}
+	case 99:
+		fallthrough
+	default:
+		return instruction{opCode, rawOpCode, []int{}}
 	}
-
-	rawParameters := make([]int, 3)
-	for i := range rawParameters {
-		rawParameters[i] = c.program[c.currentPosition+i+1]
-	}
-
-	return instruction{opCode, rawOpCode, rawParameters}
 }
 
 func (c *computer) processInstruction(instruction instruction) {
@@ -134,7 +153,75 @@ func (c *computer) processInstruction(instruction instruction) {
 
 		c.output = value
 		c.currentPosition += 2
+	case 5:
+		value, mode := instruction.getParameter(0)
+		if mode == 0 {
+			value = _program[value]
+		}
+
+		if value != 0 {
+			instruction, instructionMode := instruction.getParameter(1)
+			if instructionMode == 0 {
+				instruction = _program[instruction]
+			}
+
+			_program[c.currentPosition] = instruction
+		} else {
+			c.currentPosition += 3
+		}
+	case 6:
+		value, mode := instruction.getParameter(0)
+		if mode == 0 {
+			value = _program[value]
+		}
+
+		if value == 0 {
+			instruction, instructionMode := instruction.getParameter(1)
+			if instructionMode == 0 {
+				instruction = _program[instruction]
+			}
+
+			_program[c.currentPosition] = instruction
+		} else {
+			c.currentPosition += 3
+		}
+	case 7:
+		operandA, operandAMode := instruction.getParameter(0)
+		if operandAMode == 0 {
+			operandA = _program[operandA]
+		}
+
+		operandB, operandBMode := instruction.getParameter(1)
+		if operandBMode == 0 {
+			operandB = _program[operandB]
+		}
+
+		targetParameter, _ := instruction.getParameter(2)
+		if operandA < operandB {
+			_program[targetParameter] = 1
+		} else {
+			_program[targetParameter] = 0
+		}
+	case 8:
+		operandA, operandAMode := instruction.getParameter(0)
+		if operandAMode == 0 {
+			operandA = _program[operandA]
+		}
+
+		operandB, operandBMode := instruction.getParameter(1)
+		if operandBMode == 0 {
+			operandB = _program[operandB]
+		}
+
+		targetParameter, _ := instruction.getParameter(2)
+		if operandA == operandB {
+			_program[targetParameter] = 1
+		} else {
+			_program[targetParameter] = 0
+		}
 	case 99:
+		c.halt = true
+	default:
 		c.halt = true
 	}
 
@@ -143,20 +230,19 @@ func (c *computer) processInstruction(instruction instruction) {
 	return
 }
 
-func processA(program []int) int {
-	computer := computer{program, 0, false, 1, 0}
+func process(program []int, input int) int {
+	computer := computer{program, 0, false, input, 0}
 
 	for {
 		instruction := computer.parseInstruction()
 		computer.processInstruction(instruction)
 
-		fmt.Println(instruction)
-		fmt.Println(computer.output)
+		fmt.Println(instruction, computer.output)
 
 		if computer.halt {
 			break
 		}
 	}
 
-	return 1
+	return computer.output
 }
