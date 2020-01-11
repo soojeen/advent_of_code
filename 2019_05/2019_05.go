@@ -12,16 +12,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	input := parseInput(rawInput)
+	program := parseInput(rawInput)
 
-	input[1] = 12
-	input[2] = 2
-
-	resultA := process(input)
-	fmt.Println(resultA[0])
-
-	noun, verb := findInputs(input)
-	fmt.Println(noun*100 + verb)
+	resultA := processA(program)
+	fmt.Println(resultA)
 }
 
 func parseInput(rawInput string) []int {
@@ -40,56 +34,129 @@ func parseInput(rawInput string) []int {
 	return positions
 }
 
-func process(codes []int) []int {
-	_codes := append([]int(nil), codes...)
-	currentPosition := 0
-
-	for _codes[currentPosition] != 99 {
-		opCode := _codes[currentPosition]
-		inputA := _codes[_codes[currentPosition+1]]
-		inputB := _codes[_codes[currentPosition+2]]
-		outputPosition := _codes[currentPosition+3]
-
-		switch opCode {
-		case 1:
-			_codes[outputPosition] = inputA + inputB
-		case 2:
-			_codes[outputPosition] = inputA * inputB
-		}
-
-		currentPosition += 4
-	}
-
-	return _codes
+type computer struct {
+	program         []int
+	currentPosition int
+	halt            bool
+	input           int
+	output          int
 }
 
-func findInputs(input []int) (int, int) {
-	var noun int
-	var verb int
-	done := false
+type instruction struct {
+	opCode        int
+	rawOpCode     int
+	rawParameters []int
+}
 
-	for i := 0; i < 100; i++ {
-		if done {
-			break
+func (i *instruction) getParameter(position int) (int, int) {
+	parameter := i.rawParameters[position]
+	mode := 0
+
+	switch position {
+	case 0:
+		mode = (i.rawOpCode % 1000) / 100
+		return parameter, mode
+	case 1:
+		mode = (i.rawOpCode % 10000) / 1000
+		return parameter, mode
+	case 2:
+		return parameter, mode
+	default:
+		return 0, 0
+	}
+}
+
+func (c *computer) parseInstruction() instruction {
+	rawOpCode := c.program[c.currentPosition]
+	opCode := rawOpCode % 100
+
+	if opCode == 99 {
+		return instruction{opCode, rawOpCode, []int{}}
+	}
+
+	if opCode == 3 || opCode == 4 {
+		rawParameters := []int{c.program[c.currentPosition+1]}
+		return instruction{opCode, rawOpCode, rawParameters}
+	}
+
+	rawParameters := make([]int, 3)
+	for i := range rawParameters {
+		rawParameters[i] = c.program[c.currentPosition+i+1]
+	}
+
+	return instruction{opCode, rawOpCode, rawParameters}
+}
+
+func (c *computer) processInstruction(instruction instruction) {
+	_program := c.program
+
+	switch instruction.opCode {
+	case 1:
+		augend, augendMode := instruction.getParameter(0)
+		if augendMode == 0 {
+			augend = _program[augend]
 		}
 
-		for j := 0; j < 100; j++ {
-			if done {
-				break
-			}
+		addend, addendMode := instruction.getParameter(1)
+		if addendMode == 0 {
+			addend = _program[addend]
+		}
 
-			input[1] = i
-			input[2] = j
+		targetParameter, _ := instruction.getParameter(2)
 
-			result := process(input)
+		_program[targetParameter] = augend + addend
+		c.currentPosition += 4
+	case 2:
+		multiplicand, multiplicandMode := instruction.getParameter(0)
+		if multiplicandMode == 0 {
+			multiplicand = _program[multiplicand]
+		}
 
-			if result[0] == 19690720 {
-				noun = i
-				verb = j
-				done = true
-			}
+		multiplier, multiplierMode := instruction.getParameter(1)
+		if multiplierMode == 0 {
+			multiplier = _program[multiplier]
+		}
+
+		targetParameter, _ := instruction.getParameter(2)
+
+		_program[targetParameter] = multiplicand * multiplier
+		c.currentPosition += 4
+	case 3:
+		targetParameter, _ := instruction.getParameter(0)
+
+		_program[targetParameter] = c.input
+		c.currentPosition += 2
+	case 4:
+		value, mode := instruction.getParameter(0)
+		if mode == 0 {
+			value = _program[value]
+		}
+
+		c.output = value
+		c.currentPosition += 2
+	case 99:
+		c.halt = true
+	}
+
+	c.program = _program
+
+	return
+}
+
+func processA(program []int) int {
+	computer := computer{program, 0, false, 1, 0}
+
+	for {
+		instruction := computer.parseInstruction()
+		computer.processInstruction(instruction)
+
+		fmt.Println(instruction)
+		fmt.Println(computer.output)
+
+		if computer.halt {
+			break
 		}
 	}
 
-	return noun, verb
+	return 1
 }
