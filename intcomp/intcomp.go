@@ -52,19 +52,9 @@ func (c *Computer) logic() {
 	case 5:
 	case 6:
 	case 7:
-		value := 0
-		if c.getParameter(0) < c.getParameter(1) {
-			value = 1
-		}
-
-		c.Program[c.getRawParameter(2)] = value
+		c.Program[c.getRawParameter(2)] = booleanInt(c.getParameter(0) < c.getParameter(1))
 	case 8:
-		value := 0
-		if c.getParameter(0) == c.getParameter(1) {
-			value = 1
-		}
-
-		c.Program[c.getRawParameter(2)] = value
+		c.Program[c.getRawParameter(2)] = booleanInt(c.getParameter(0) == c.getParameter(1))
 	case 99:
 		fallthrough
 	default:
@@ -108,14 +98,18 @@ func (c *Computer) RunProgram() int {
 	c.halt = false
 	c.instructionPointer = 0
 
-	for {
+	for !c.halt {
 		c.logic()
 		c.movePointer()
-
-		if c.halt {
-			break
-		}
 	}
 
 	return c.output
+}
+
+func booleanInt(condition bool) int {
+	if condition {
+		return 1
+	}
+
+	return 0
 }
