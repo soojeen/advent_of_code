@@ -38,20 +38,25 @@ func parseInput(rawInput string) []int {
 }
 
 type computer struct {
-	program         []int
-	currentPosition int
-	halt            bool
-	input           int
-	output          int
+	program            []int
+	instructionPointer int
+	halt               bool
+	input              int
+	output             int
+}
+
+func (c *computer) getCurrentOpCode() int {
+	rawOpCode := c.program[c.instructionPointer]
+	return rawOpCode % 100
 }
 
 func (c *computer) getRawParameter(index int) int {
-	return c.program[c.currentPosition+index+1]
+	return c.program[c.instructionPointer+index+1]
 }
 
 func (c *computer) getParameter(index int) int {
 	value := c.getRawParameter(index)
-	rawOpCode := c.program[c.currentPosition]
+	rawOpCode := c.program[c.instructionPointer]
 	mode := 0
 
 	switch index {
@@ -68,59 +73,75 @@ func (c *computer) getParameter(index int) int {
 	return value
 }
 
-func (c *computer) processInstruction() {
-	rawOpCode := c.program[c.currentPosition]
-	opCode := rawOpCode % 100
-	_program := c.program
+func (c *computer) logic() {
+	opCode := c.getCurrentOpCode()
 
 	switch opCode {
 	case 1:
-		_program[c.getRawParameter(2)] = c.getParameter(0) + c.getParameter(1)
-		c.currentPosition += 4
+		c.program[c.getRawParameter(2)] = c.getParameter(0) + c.getParameter(1)
 	case 2:
-		_program[c.getRawParameter(2)] = c.getParameter(0) * c.getParameter(1)
-		c.currentPosition += 4
+		c.program[c.getRawParameter(2)] = c.getParameter(0) * c.getParameter(1)
 	case 3:
-		_program[c.getRawParameter(0)] = c.input
-		c.currentPosition += 2
+		c.program[c.getRawParameter(0)] = c.input
 	case 4:
 		c.output = c.getParameter(0)
-		c.currentPosition += 2
 	case 5:
-		if c.getParameter(0) != 0 {
-			c.currentPosition = c.getParameter(1)
-		} else {
-			c.currentPosition += 3
-		}
 	case 6:
-		if c.getParameter(0) == 0 {
-			c.currentPosition = c.getParameter(1)
-		} else {
-			c.currentPosition += 3
-		}
 	case 7:
 		value := 0
 		if c.getParameter(0) < c.getParameter(1) {
 			value = 1
 		}
 
-		_program[c.getRawParameter(2)] = value
-		c.currentPosition += 4
+		c.program[c.getRawParameter(2)] = value
 	case 8:
 		value := 0
 		if c.getParameter(0) == c.getParameter(1) {
 			value = 1
 		}
 
-		_program[c.getRawParameter(2)] = value
-		c.currentPosition += 4
+		c.program[c.getRawParameter(2)] = value
 	case 99:
 		fallthrough
 	default:
 		c.halt = true
 	}
+}
 
-	return
+func (c *computer) movePointer() {
+	opCode := c.getCurrentOpCode()
+
+	switch opCode {
+	case 1:
+		fallthrough
+	case 2:
+		fallthrough
+	case 7:
+		fallthrough
+	case 8:
+		c.instructionPointer += 4
+	case 3:
+		fallthrough
+	case 4:
+		c.instructionPointer += 2
+	case 5:
+		if c.getParameter(0) != 0 {
+			c.instructionPointer = c.getParameter(1)
+		} else {
+			c.instructionPointer += 3
+		}
+	case 6:
+		if c.getParameter(0) == 0 {
+			c.instructionPointer = c.getParameter(1)
+		} else {
+			c.instructionPointer += 3
+		}
+	}
+}
+
+func (c *computer) processInstruction() {
+	c.logic()
+	c.movePointer()
 }
 
 func process(program []int, input int) int {
