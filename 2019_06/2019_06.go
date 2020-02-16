@@ -18,8 +18,9 @@ func main() {
 	parentMap := parseInput(rawInput)
 
 	resultA := processA(parentMap)
-	resultB := processB(parentMap)
 	fmt.Println(resultA)
+
+	resultB := processB(parentMap)
 	fmt.Println(resultB)
 }
 

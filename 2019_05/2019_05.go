@@ -40,9 +40,11 @@ func parseInput(rawInput string) []int {
 
 func process(program []int, input int) int {
 	programCopy := append(program[:0:0], program...)
+	inputs := []int{input}
+
 	computer := intcomp.Computer{
 		Program: programCopy,
-		Input:   input,
+		Inputs:  inputs,
 	}
 
 	return computer.RunProgram()

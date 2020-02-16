@@ -1,12 +1,33 @@
 package intcomp
 
+import "log"
+import "strconv"
+import "strings"
+
 // Computer - advent of code Int Comp
 type Computer struct {
 	Program            []int
 	instructionPointer int
 	halt               bool
-	Input              int
+	Inputs             []int
 	output             int
+}
+
+// Parse - helper to parse strings
+func Parse(rawInput string) []int {
+	_positions := strings.Split(rawInput, ",")
+
+	positions := make([]int, len(_positions))
+	for i := range positions {
+		position, e := strconv.Atoi(_positions[i])
+		if e != nil {
+			log.Fatal(e)
+		}
+
+		positions[i] = position
+	}
+
+	return positions
 }
 
 func (c *Computer) getCurrentOpCode() int {
@@ -46,7 +67,8 @@ func (c *Computer) logic() {
 	case 2:
 		c.Program[c.getRawParameter(2)] = c.getParameter(0) * c.getParameter(1)
 	case 3:
-		c.Program[c.getRawParameter(0)] = c.Input
+		c.Program[c.getRawParameter(0)] = c.Inputs[0]
+		c.Inputs = c.Inputs[1:]
 	case 4:
 		c.output = c.getParameter(0)
 	case 5:
