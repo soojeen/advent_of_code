@@ -5,10 +5,9 @@ import "log"
 import "strings"
 import "advent_of_code/utils"
 
-type node struct {
-	value    string
-	children []*node
-}
+const root = "COM"
+
+type stringMap map[string]string
 
 func main() {
 	rawInput, err := utils.ReadInput("input.txt")
@@ -16,50 +15,85 @@ func main() {
 		log.Fatal(err)
 	}
 
-	root := parseInput(rawInput)
+	parentMap := parseInput(rawInput)
 
-	resultA := process(root)
+	resultA := processA(parentMap)
+	resultB := processB(parentMap)
 	fmt.Println(resultA)
+	fmt.Println(resultB)
 }
 
-func parseInput(rawInput string) *node {
-	lookup := make(map[string]*node)
-	// to find root
-	// parentLookup := make(map[string]*node)
-
+func parseInput(rawInput string) stringMap {
+	parentMap := make(map[string]string)
 	orbitPairs := strings.Split(rawInput, "\n")
 
 	for _, orbitPair := range orbitPairs {
 		orbitPair := strings.Split(orbitPair, ")")
 
-		valueB := orbitPair[1]
-		nodeB := lookup[valueB]
-
-		if nodeB == nil {
-			nodeB = &node{valueB, []*node{}}
-		}
-
-		valueA := orbitPair[0]
-		nodeA := lookup[valueA]
-
-		if nodeA == nil {
-			nodeA = &node{valueA, []*node{nodeB}}
-		} else {
-			nodeA.children = append(nodeA.children, nodeB)
-		}
-
-		lookup[valueA] = nodeA
-		lookup[valueB] = nodeB
+		parentMap[orbitPair[1]] = orbitPair[0]
 	}
 
-	fmt.Println(lookup["ZZZ"])
-	fmt.Println(lookup["ZZZ"].children[0])
-
-	rootNode := node{"a", make([]*node, 0)}
-
-	return &rootNode
+	return parentMap
 }
 
-func process(root *node) int {
-	return 1
+func processA(parentMap stringMap) int {
+	total := 0
+
+	for _, parent := range parentMap {
+		current := parent
+		currentParentCount := 1
+
+		for {
+			if current == root {
+				break
+			}
+
+			currentParentCount++
+			current = parentMap[current]
+		}
+
+		total += currentParentCount
+	}
+
+	return total
+}
+
+type traceMap map[string]int
+
+func traceMapForTarget(parentMap stringMap, target string) traceMap {
+	traceMap := make(traceMap)
+	current := parentMap[target]
+	distance := 0
+
+	for {
+		if current == root {
+			break
+		}
+
+		traceMap[current] = distance
+		distance++
+		current = parentMap[current]
+	}
+
+	return traceMap
+}
+
+func processB(parentMap stringMap) int {
+	youTrace := traceMapForTarget(parentMap, "YOU")
+	santaTrace := traceMapForTarget(parentMap, "SAN")
+
+	closest := len(santaTrace) + len(parentMap)
+
+	for key, value := range santaTrace {
+		youValue := youTrace[key]
+		total := value + youValue
+
+		if youValue == 0 || total > closest {
+			continue
+		}
+
+		closest = total
+	}
+
+	return closest
 }
