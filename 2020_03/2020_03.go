@@ -2,29 +2,8 @@ package main
 
 import "fmt"
 import "log"
-import "strconv"
 import "strings"
 import "advent_of_code/utils"
-
-type passwordPolicy struct {
-	min      int
-	max      int
-	match    string
-	password string
-}
-
-func (pp *passwordPolicy) isValid() bool {
-	count := strings.Count(pp.password, pp.match)
-
-	return count >= pp.min && count <= pp.max
-}
-
-func (pp *passwordPolicy) isValidReal() bool {
-	x := string(pp.password[pp.min-1]) == pp.match
-	y := string(pp.password[pp.max-1]) == pp.match
-
-	return x != y
-}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -32,70 +11,45 @@ func main() {
 		log.Fatal(readError)
 	}
 
-	input, parseError := parseInput(rawInput)
-	if parseError != nil {
-		log.Fatal(parseError)
-	}
+	input := parseInput(rawInput)
 
-	resultA := findValid(input)
-	resultB := findValidReal(input)
+	resultA := countTrees(input, 3, 1)
+	resultB := moreTrails(input)
 
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
+
 }
 
-func parseInput(input string) ([]passwordPolicy, error) {
-	lines := strings.Split(input, "\n")
-	result := make([]passwordPolicy, len(lines))
-	var err error
-
-	for i, line := range lines {
-		lineParts := strings.Split(line, ": ")
-		policyParts := strings.Split(lineParts[0], " ")
-		minMax := strings.Split(policyParts[0], "-")
-
-		min, e := strconv.Atoi(minMax[0])
-		if e != nil {
-			err = e
-			break
-		}
-
-		max, e := strconv.Atoi(minMax[1])
-		if e != nil {
-			err = e
-			break
-		}
-
-		policy := passwordPolicy{min, max, policyParts[1], lineParts[1]}
-
-		result[i] = policy
-	}
-
-	return result, err
+func parseInput(input string) []string {
+	return strings.Split(input, "\n")
 }
 
-func findValid(input []passwordPolicy) int {
+func countTrees(input []string, right int, down int) int {
 	count := 0
+	marker := 0
+	moduloOperator := len(input[0])
 
-	for _, password := range input {
-		isValid := password.isValid()
-		if isValid {
+	for i := 0; i < len(input); i += down {
+		relativeMarker := marker % moduloOperator
+		value := string(input[i][relativeMarker])
+
+		if value == "#" {
 			count++
 		}
+
+		marker += right
 	}
 
 	return count
 }
 
-func findValidReal(input []passwordPolicy) int {
-	count := 0
+func moreTrails(input []string) int {
+	a := countTrees(input, 1, 1)
+	b := countTrees(input, 3, 1)
+	c := countTrees(input, 5, 1)
+	d := countTrees(input, 7, 1)
+	e := countTrees(input, 1, 2)
 
-	for _, password := range input {
-		isValid := password.isValidReal()
-		if isValid {
-			count++
-		}
-	}
-
-	return count
+	return a * b * c * d * e
 }
