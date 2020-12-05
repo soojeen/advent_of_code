@@ -18,7 +18,6 @@ func main() {
 
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
-
 }
 
 func parseInput(input string) []string {
