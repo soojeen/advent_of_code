@@ -10,16 +10,13 @@ type passport string
 type validator []*regexp.Regexp
 
 func (pp passport) isValid(validator validator) bool {
-	isValidPassport := true
-
 	for _, re := range validator {
 		if !re.MatchString(string(pp)) {
-			isValidPassport = false
-			break
+			return false
 		}
 	}
 
-	return isValidPassport
+	return true
 }
 
 func main() {
@@ -39,7 +36,6 @@ func main() {
 
 func parseInput(input string) []passport {
 	passports := strings.Split(input, "\n\n")
-
 	result := make([]passport, len(passports))
 
 	for i, passportLine := range passports {
@@ -55,9 +51,7 @@ func countValid(input []passport, validator validator) int {
 	validCount := 0
 
 	for _, passport := range input {
-		isValid := passport.isValid(validator)
-
-		if isValid {
+		if passport.isValid(validator) {
 			validCount++
 		}
 	}
