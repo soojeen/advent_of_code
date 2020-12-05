@@ -6,7 +6,21 @@ import "regexp"
 import "strings"
 import "advent_of_code/utils"
 
-type passport = map[string]string
+type passport string
+type validator []*regexp.Regexp
+
+func (pp passport) isValid(validator validator) bool {
+	isValidPassport := true
+
+	for _, re := range validator {
+		if !re.MatchString(string(pp)) {
+			isValidPassport = false
+			break
+		}
+	}
+
+	return isValidPassport
+}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -16,32 +30,32 @@ func main() {
 
 	input := parseInput(rawInput)
 
-	resultA := countValid(input, isValidPassport)
-	resultB := countValid(input, isValidValidPassport)
+	resultA := countValid(input, requiredKeysRegex)
+	resultB := countValid(input, passportRegex)
 
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
 }
 
-func parseInput(input string) []string {
+func parseInput(input string) []passport {
 	passports := strings.Split(input, "\n\n")
 
-	result := make([]string, len(passports))
+	result := make([]passport, len(passports))
 
-	for i, rawPassport := range passports {
-		passport := strings.Replace(rawPassport, "\n", " ", -1)
-
-		result[i] = passport
+	for i, passportLine := range passports {
+		// key/value pairs in passport can be separated by space or new line.
+		// format consistently with space.
+		result[i] = passport(strings.Replace(passportLine, "\n", " ", -1))
 	}
 
 	return result
 }
 
-func countValid(input []string, validator func(string) bool) int {
+func countValid(input []passport, validator validator) int {
 	validCount := 0
 
 	for _, passport := range input {
-		isValid := validator(passport)
+		isValid := passport.isValid(validator)
 
 		if isValid {
 			validCount++
@@ -51,76 +65,40 @@ func countValid(input []string, validator func(string) bool) int {
 	return validCount
 }
 
-func isValidPassport(input string) bool {
-	var requiredKeys = []string{"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
-	isValid := true
+var requiredKeys = []string{"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
+var requiredKeysRegex = createRequiredKeysRegex()
 
-	for _, key := range requiredKeys {
-		re := regexp.MustCompile(key)
-		match := re.MatchString(input)
+func createRequiredKeysRegex() validator {
+	result := make(validator, len(requiredKeys))
 
-		if !match {
-			isValid = false
-			break
-		}
+	for i, key := range requiredKeys {
+		result[i] = regexp.MustCompile(key)
 	}
 
-	return isValid
+	return result
 }
 
-func isValidValidPassport(input string) bool {
-	isValid := true
-
+var passportRegex = validator{
 	// byr (Birth Year) - four digits; at least 1920 and at most 2002.
-	byrRegex := regexp.MustCompile(`\bbyr:(19[2-9]\d|200[0-2])\b`)
-	byrValid := byrRegex.MatchString(input)
-	if !byrValid {
-		return false
-	}
+	regexp.MustCompile(`\bbyr:(19[2-9]\d|200[0-2])\b`),
 
 	// iyr (Issue Year) - four digits; at least 2010 and at most 2020.
-	iyrRegex := regexp.MustCompile(`\biyr:(201\d|2020)\b`)
-	iyrValid := iyrRegex.MatchString(input)
-	if !iyrValid {
-		return false
-	}
+	regexp.MustCompile(`\biyr:(201\d|2020)\b`),
 
 	// eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
-	eyrRegex := regexp.MustCompile(`\beyr:(202\d|2030)\b`)
-	eyrValid := eyrRegex.MatchString(input)
-	if !eyrValid {
-		return false
-	}
+	regexp.MustCompile(`\beyr:(202\d|2030)\b`),
 
 	// hgt (Height) - a number followed by either cm or in:
 	// 		If cm, the number must be at least 150 and at most 193.
 	// 		If in, the number must be at least 59 and at most 76.
-	hgtRegex := regexp.MustCompile(`\bhgt:(1([5-8]\d|9[0-3])cm|(59|6\d|7[0-6])in)\b`)
-	hgtValid := hgtRegex.MatchString(input)
-	if !hgtValid {
-		return false
-	}
+	regexp.MustCompile(`\bhgt:(1([5-8]\d|9[0-3])cm|(59|6\d|7[0-6])in)\b`),
 
 	// hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
-	hclRegex := regexp.MustCompile(`\bhcl:#[0-9a-f]{6}\b`)
-	hclValid := hclRegex.MatchString(input)
-	if !hclValid {
-		return false
-	}
+	regexp.MustCompile(`\bhcl:#[0-9a-f]{6}\b`),
 
 	// ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
-	eclRegex := regexp.MustCompile(`\becl:(amb|blu|brn|gry|grn|hzl|oth)\b`)
-	eclValid := eclRegex.MatchString(input)
-	if !eclValid {
-		return false
-	}
+	regexp.MustCompile(`\becl:(amb|blu|brn|gry|grn|hzl|oth)\b`),
 
 	// pid (Passport ID) - a nine-digit number, including leading zeroes.
-	pidRegex := regexp.MustCompile(`\b\d{9}\b`)
-	pidValid := pidRegex.MatchString(input)
-	if !pidValid {
-		return false
-	}
-
-	return isValid
+	regexp.MustCompile(`\b\d{9}\b`),
 }
