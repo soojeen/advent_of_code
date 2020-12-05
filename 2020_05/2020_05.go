@@ -59,36 +59,31 @@ func findSeatID(input []string) int {
 }
 
 func getSeatID(input string) int {
-	rawRow := input[:7]
-	rawCol := input[7:]
-
-	rowBin := binaryPartition(rawRow, 'B', 'F')
-	colBin := binaryPartition(rawCol, 'R', 'L')
-
-	row, parseError := strconv.ParseInt(rowBin, 2, 0)
-	if parseError != nil {
-		log.Fatal(parseError)
-	}
-
-	col, parseError := strconv.ParseInt(colBin, 2, 0)
-	if parseError != nil {
-		log.Fatal(parseError)
-	}
-
-	return (int(row) * 8) + int(col)
-}
-
-func binaryPartition(input string, top rune, bottom rune) string {
 	binary := ""
 
 	for _, char := range input {
-		switch char {
-		case top:
-			binary += "1"
-		case bottom:
-			binary += "0"
-		}
+		binary += converter(char)
 	}
 
-	return binary
+	seatID, parseError := strconv.ParseInt(binary, 2, 0)
+	if parseError != nil {
+		log.Fatal(parseError)
+	}
+
+	return int(seatID)
+}
+
+func converter(input rune) string {
+	switch input {
+	case 'F':
+		return "0"
+	case 'B':
+		return "1"
+	case 'L':
+		return "0"
+	case 'R':
+		return "1"
+	}
+
+	return ""
 }
