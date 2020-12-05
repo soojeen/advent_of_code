@@ -73,6 +73,8 @@ func getSeatID(input string) int {
 	return int(seatID)
 }
 
+// "multiply the row by 8, then add the column"
+// is equivalent to convert chair string directly to binary
 func converter(input rune) string {
 	switch input {
 	case 'F':
