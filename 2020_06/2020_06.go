@@ -37,25 +37,25 @@ func countAll(input []string, counter func(string) int) int {
 func countGroupA(input string) int {
 	rawResult := strings.Replace(input, "\n", "", -1)
 
-	charTrack := make(map[rune]bool)
+	charTracker := make(map[rune]bool)
 	for _, char := range rawResult {
-		charTrack[char] = true
+		charTracker[char] = true
 	}
 
-	return len(charTrack)
+	return len(charTracker)
 }
 
 func countGroupB(input string) int {
 	personCount := strings.Count(input, "\n") + 1
 	rawResult := strings.Replace(input, "\n", "", -1)
 
-	charTrack := make(map[rune]int)
+	charTracker := make(map[rune]int)
 	count := 0
 
 	for _, char := range rawResult {
-		charTrack[char]++
+		charTracker[char]++
 
-		if charTrack[char] == personCount {
+		if charTracker[char] == personCount {
 			count++
 		}
 	}
