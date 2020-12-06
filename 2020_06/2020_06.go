@@ -46,12 +46,19 @@ func countGroupA(input string) int {
 }
 
 func countGroupB(input string) int {
+	personCount := strings.Count(input, "\n") + 1
 	rawResult := strings.Replace(input, "\n", "", -1)
 
-	charTrack := make(map[rune]bool)
+	charTrack := make(map[rune]int)
+	count := 0
+
 	for _, char := range rawResult {
-		charTrack[char] = true
+		charTrack[char]++
+
+		if charTrack[char] == personCount {
+			count++
+		}
 	}
 
-	return len(charTrack)
+	return count
 }
