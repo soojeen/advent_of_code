@@ -13,27 +13,45 @@ func main() {
 
 	input := parseInput(rawInput)
 
-	resultA := countAll(input)
-	// resultB := findSeatID(input)
+	resultA := countAll(input, countGroupA)
+	resultB := countAll(input, countGroupB)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) []string {
 	return strings.Split(input, "\n\n")
 }
 
-func countAll(input []string) int {
+func countAll(input []string, counter func(string) int) int {
 	count := 0
 
 	for _, group := range input {
-		count += countGroup(group)
+		count += counter(group)
 	}
 
 	return count
 }
 
-func countGroup(input string) int {
-	return 0
+func countGroupA(input string) int {
+	rawResult := strings.Replace(input, "\n", "", -1)
+
+	charTrack := make(map[rune]bool)
+	for _, char := range rawResult {
+		charTrack[char] = true
+	}
+
+	return len(charTrack)
+}
+
+func countGroupB(input string) int {
+	rawResult := strings.Replace(input, "\n", "", -1)
+
+	charTrack := make(map[rune]bool)
+	for _, char := range rawResult {
+		charTrack[char] = true
+	}
+
+	return len(charTrack)
 }
