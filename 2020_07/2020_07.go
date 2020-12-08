@@ -123,18 +123,20 @@ func countChildren(input []luggageRule, color string) int {
 		parentToChild[rule.container] = rule.children
 	}
 
-	return getChildrenCount(parentToChild, color)
+	return getChildrenCount(parentToChild, color) - 1
 }
 
 func getChildrenCount(input map[string][]childBag, color string) int {
 	children := input[color]
+	moreChildren := 1
+
 	if children == nil || len(children) == 0 {
-		return 1
+		return moreChildren
 	}
 
-	moreChildren := 0
 	for _, child := range children {
 		moreChildren += child.count * getChildrenCount(input, child.color)
+
 	}
 
 	return moreChildren
