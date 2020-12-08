@@ -30,10 +30,10 @@ func main() {
 		log.Fatal(parseError)
 	}
 	resultA := countParents(input, "shiny gold")
-	// resultB := countAll(input, countGroupB)
+	resultB := countChildren(input, "shiny gold")
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]luggageRule, error) {
@@ -115,4 +115,27 @@ func merge(inputA, inputB tracker) tracker {
 	}
 
 	return result
+}
+
+func countChildren(input []luggageRule, color string) int {
+	parentToChild := make(map[string][]childBag, len(input))
+	for _, rule := range input {
+		parentToChild[rule.container] = rule.children
+	}
+
+	return getChildrenCount(parentToChild, color)
+}
+
+func getChildrenCount(input map[string][]childBag, color string) int {
+	children := input[color]
+	if children == nil || len(children) == 0 {
+		return 1
+	}
+
+	moreChildren := 0
+	for _, child := range children {
+		moreChildren += child.count * getChildrenCount(input, child.color)
+	}
+
+	return moreChildren
 }
