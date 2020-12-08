@@ -92,7 +92,7 @@ func getParents(input map[string]tracker, color string) tracker {
 	parents := input[color]
 	moreParents := make(tracker)
 
-	if parents == nil || len(parents) == 0 {
+	if len(parents) == 0 {
 		return moreParents
 	}
 
@@ -130,7 +130,7 @@ func getChildrenCount(input map[string][]childBag, color string) int {
 	children := input[color]
 	moreChildren := 1
 
-	if children == nil || len(children) == 0 {
+	if len(children) == 0 {
 		return moreChildren
 	}
 
