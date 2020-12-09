@@ -22,6 +22,7 @@ func (c *bootCode) reset() {
 }
 
 func (c *bootCode) runUntilLoop() bool {
+	c.reset()
 	tracker := make(map[int]bool)
 
 	for {
@@ -92,28 +93,19 @@ func findLoop(input bootCode) int {
 }
 
 func breakLoop(input bootCode) int {
+	swap := map[string]string{"jmp": "nop", "nop": "jmp"}
+
 	for i, line := range input.code {
-		reverse := ""
+		op := line.op
+		input.code[i].op = swap[op]
 
-		switch line.op {
-		case "acc":
-			continue
-		case "jmp":
-			input.code[i].op = "nop"
-			reverse = "jmp"
-		case "nop":
-			input.code[i].op = "jmp"
-			reverse = "nop"
-		}
-
-		input.reset()
 		isLoop := input.runUntilLoop()
 
 		if !isLoop {
 			return input.acc
 		}
 
-		input.code[i].op = reverse
+		input.code[i].op = op
 	}
 
 	return -1
