@@ -53,19 +53,17 @@ func findInvalid(input []int) (int, int) {
 		}
 	}
 
-	return -1, 0
+	return 0, 0
 }
 
-func checkValid(numbers []int, value int) bool {
-	input := make(map[int]bool)
-	for _, number := range numbers {
-		input[number] = true
+func checkValid(input []int, value int) bool {
+	numbers := make(map[int]bool)
+	for _, number := range input {
+		numbers[number] = true
 	}
 
-	for _, number := range numbers {
-		diff := value - number
-
-		if input[diff] {
+	for _, number := range input {
+		if numbers[value-number] {
 			return true
 		}
 	}
@@ -74,43 +72,32 @@ func checkValid(numbers []int, value int) bool {
 }
 
 func processB(numbers []int, value int, upperIndex int) int {
-	set := findSet(numbers, value, upperIndex)
-	sort.Ints(set)
+	group := findGroup(numbers, value, upperIndex)
+	sort.Ints(group)
 
-	return set[0] + set[len(set)-1]
+	return group[0] + group[len(group)-1]
 }
 
-func findSet(numbers []int, value int, upperIndex int) []int {
-	set := []int{numbers[upperIndex]}
+func findGroup(numbers []int, value int, upperIndex int) []int {
+	group := []int{numbers[upperIndex]}
 	sum := numbers[upperIndex]
-	next := upperIndex - 1
-	isCollect := true
 
-	for {
-		if isCollect {
-			number := numbers[next]
+	for next := upperIndex - 1; next >= 0; {
+		number := numbers[next]
 
-			if sum+number > value {
-				isCollect = false
-				continue
-			}
-
-			if (sum + number) == value {
-				return set
-			}
-
-			set = append([]int{number}, set...)
-			sum += number
-			next--
-
-		} else {
-			isCollect = true
-			sum -= set[len(set)-1]
-			set = set[:len(set)-1]
+		if sum+number > value {
+			lastIndex := len(group) - 1
+			sum -= group[lastIndex]
+			group = group[:lastIndex]
+			continue
 		}
 
-		if next == 0 {
-			break
+		group = append([]int{number}, group...)
+		sum += number
+		next--
+
+		if sum == value {
+			return group
 		}
 	}
 
