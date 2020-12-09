@@ -79,13 +79,13 @@ func processB(numbers []int, value int, upperIndex int) int {
 }
 
 func findGroup(numbers []int, value int, upperIndex int) []int {
-	group := []int{numbers[upperIndex]}
-	sum := numbers[upperIndex]
+	group := []int{}
+	sum := 0
 
-	for next := upperIndex - 1; next >= 0; {
+	for next := upperIndex; next >= 0; {
 		number := numbers[next]
 
-		if sum+number > value {
+		if sum+number > value && len(group) > 0 {
 			lastIndex := len(group) - 1
 			sum -= group[lastIndex]
 			group = group[:lastIndex]
