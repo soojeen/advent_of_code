@@ -10,19 +10,27 @@ type instruct struct {
 	op  string
 	arg int
 }
-
 type bootCode struct {
 	acc  int
 	code []instruct
 	idx  int
 }
 
-func (c *bootCode) runUntilLoop() {
+func (c *bootCode) reset() {
+	c.acc = 0
+	c.idx = 0
+}
+
+func (c *bootCode) runUntilLoop() bool {
 	tracker := make(map[int]bool)
 
 	for {
 		if tracker[c.idx] == true {
-			break
+			return true
+		}
+
+		if c.idx == len(c.code) {
+			return false
 		}
 
 		tracker[c.idx] = true
@@ -50,11 +58,12 @@ func main() {
 	if parseError != nil {
 		log.Fatal(parseError)
 	}
+
 	resultA := findLoop(input)
-	// resultB := countChildren(input, "shiny gold")
+	resultB := breakLoop(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) (bootCode, error) {
@@ -80,4 +89,32 @@ func findLoop(input bootCode) int {
 	input.runUntilLoop()
 
 	return input.acc
+}
+
+func breakLoop(input bootCode) int {
+	for i, line := range input.code {
+		reverse := ""
+
+		switch line.op {
+		case "acc":
+			continue
+		case "jmp":
+			input.code[i].op = "nop"
+			reverse = "jmp"
+		case "nop":
+			input.code[i].op = "jmp"
+			reverse = "nop"
+		}
+
+		input.reset()
+		isLoop := input.runUntilLoop()
+
+		if !isLoop {
+			return input.acc
+		}
+
+		input.code[i].op = reverse
+	}
+
+	return -1
 }
