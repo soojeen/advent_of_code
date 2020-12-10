@@ -62,38 +62,36 @@ func findDistribution(input []int) int {
 func findArrangements(input []int) int {
 	multiplier := map[int]int{1: 1, 2: 2, 3: 4, 4: 7}
 
-	// insert 0 plug source
-	numbers := append(input, 0)
-	sort.Ints(numbers)
-	last := numbers[len(numbers)-1]
-	// padding to help check next diffs
-	numbers = append(numbers, last+3, last+6)
+	sort.Ints(input)
 
+	prevDiff := 0
+	prevNumber := 0
 	result := 1
-	diffCount := 0
+	sameDiffCount := 1
 
-	for i := 0; i < len(input); i++ {
-		number := numbers[i]
-		next := numbers[i+1]
-		diff := next - number
-		nextDiff := numbers[i+2] - next
+	for i, number := range input {
+		diff := number - prevNumber
 
-		if diff == 3 {
-			continue
+		if prevDiff == 1 && diff == 1 {
+			sameDiffCount++
 		}
 
-		if diffCount == 0 && diff != nextDiff {
-			continue
+		if prevDiff == 1 && diff == 3 {
+			result *= multiplier[sameDiffCount]
+			sameDiffCount = 1
 		}
 
-		diffCount++
-
-		if diff != nextDiff {
-			result *= multiplier[diffCount]
-			diffCount = 0
+		// final element
+		if i == len(input)-1 {
+			result *= multiplier[sameDiffCount]
 		}
 
+		prevDiff = diff
+		prevNumber = number
 	}
 
 	return result
 }
+
+// 86812553324672
+// 86812553324672
