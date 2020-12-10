@@ -54,6 +54,8 @@ func findDistribution(input []int) int {
 		diffs[diff]++
 		current += diff
 	}
+	fmt.Println("a:", diffs)
 
-	return diff[1] * diff[3]
+	// extra 3 diff between last adaptor and device
+	return diffs[1] * (diffs[3] + 1)
 }
