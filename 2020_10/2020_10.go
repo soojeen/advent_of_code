@@ -47,12 +47,12 @@ func findDistribution(input []int) int {
 	sort.Ints(input)
 
 	diffs := make(map[int]int)
-	current := 0
+	prev := 0
 
 	for _, number := range input {
-		diff := number - current
+		diff := number - prev
 		diffs[diff]++
-		current += diff
+		prev = number
 	}
 
 	// extra 3 diff between last adaptor and device
