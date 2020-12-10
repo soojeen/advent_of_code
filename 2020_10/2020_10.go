@@ -19,10 +19,10 @@ func main() {
 	}
 
 	resultA := findDistribution(input)
-	// resultB := processB(input, resultA, upperIndex)
+	resultB := findArrangements(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]int, error) {
@@ -54,8 +54,46 @@ func findDistribution(input []int) int {
 		diffs[diff]++
 		current += diff
 	}
-	fmt.Println("a:", diffs)
 
 	// extra 3 diff between last adaptor and device
 	return diffs[1] * (diffs[3] + 1)
+}
+
+func findArrangements(input []int) int {
+	multiplier := map[int]int{1: 1, 2: 2, 3: 4, 4: 7}
+
+	// insert 0 plug source
+	numbers := append(input, 0)
+	sort.Ints(numbers)
+	last := numbers[len(numbers)-1]
+	// padding to help check next diffs
+	numbers = append(numbers, last+3, last+6)
+
+	result := 1
+	diffCount := 0
+
+	for i := 0; i < len(input); i++ {
+		number := numbers[i]
+		next := numbers[i+1]
+		diff := next - number
+		nextDiff := numbers[i+2] - next
+
+		if diff == 3 {
+			continue
+		}
+
+		if diffCount == 0 && diff != nextDiff {
+			continue
+		}
+
+		diffCount++
+
+		if diff != nextDiff {
+			result *= multiplier[diffCount]
+			diffCount = 0
+		}
+
+	}
+
+	return result
 }
