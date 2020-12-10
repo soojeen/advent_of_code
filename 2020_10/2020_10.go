@@ -28,7 +28,7 @@ func main() {
 func parseInput(input string) ([]int, error) {
 	var err error
 	lines := strings.Split(input, "\n")
-	numbers := make([]int, len(input))
+	numbers := make([]int, len(lines))
 
 	for i, line := range lines {
 		number, error := strconv.Atoi(line)
@@ -45,12 +45,15 @@ func parseInput(input string) ([]int, error) {
 
 func findDistribution(input []int) int {
 	sort.Ints(input)
+
 	diffs := make(map[int]int)
 	current := 0
 
 	for _, number := range input {
-
+		diff := number - current
+		diffs[diff]++
+		current += diff
 	}
 
-	return 0
+	return diff[1] * diff[3]
 }
