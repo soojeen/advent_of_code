@@ -19,9 +19,9 @@ const empty = "L"
 const occupied = "#"
 
 func (sl *seatLayout) runRound() bool {
-	noChange := true
+	hasChange := false
 
-	return noChange
+	return hasChange
 }
 
 func (sl *seatLayout) checkSeat() (string, bool) {
@@ -30,19 +30,18 @@ func (sl *seatLayout) checkSeat() (string, bool) {
 
 	switch seat {
 	case empty:
-		noOccupied := hasNoOccupiedAdjacent(adjacent)
-
-		if noOccupied {
-			return occupied, false
+		if hasNoOccupiedAdjacent(adjacent) {
+			return occupied, true
 		}
-		return seat, true
 
 	case occupied:
-		// TODO: occupied logic
-		fallthrough
-	default:
-		return seat, true
+		if hasOccupiedAdjacent(adjacent) {
+			return empty, true
+		}
 	}
+
+	return seat, false
+
 }
 
 func (sl *seatLayout) getAdjacent() []string {
@@ -133,4 +132,16 @@ func hasNoOccupiedAdjacent(input []string) bool {
 	}
 
 	return true
+}
+
+func hasOccupiedAdjacent(input []string) bool {
+	count := 0
+
+	for _, space := range input {
+		if space == occupied {
+			count++
+		}
+	}
+
+	return count >= 4
 }
