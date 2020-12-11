@@ -92,6 +92,3 @@ func findArrangements(input []int) int {
 
 	return result
 }
-
-// 86812553324672
-// 86812553324672
