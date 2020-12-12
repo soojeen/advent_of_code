@@ -1,5 +1,7 @@
 package grid
 
+import "strings"
+
 // RuneRow - row in grid
 type RuneRow map[int]rune
 
@@ -26,21 +28,21 @@ func (gR *Rune) GetAllAdjacent(input Point) [8]rune {
 
 // RunePrettyPrint - pretty grid
 func (gR *Rune) RunePrettyPrint() string {
-	// TODO: try buffer
-	prettyGrid := ""
+	grid := (*gR)
+	b := strings.Builder{}
 
-	for y := 0; y < len((*gR)); y++ {
-		row := (*gR)[y]
-		prettyRow := ""
+	// use manual index because maps dont iterate in order
+	for y := 0; y < len(grid); y++ {
+		row := grid[y]
 
 		for x := 0; x < len(row); x++ {
-			prettyRow = prettyRow + string(row[x])
+			b.WriteRune(row[x])
 		}
 
-		prettyGrid = prettyGrid + prettyRow + "\n"
+		b.WriteString("\n")
 	}
 
-	return prettyGrid
+	return b.String()
 }
 
 // CountAll - return instance count of all

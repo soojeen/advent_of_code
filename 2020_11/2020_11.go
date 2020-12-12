@@ -37,6 +37,7 @@ func (s *seatLayout) runRound() bool {
 				callback := func(direction grid.Point, index int) {
 					for i := 1; ; i++ {
 						nextLineOfSight := s.grid[y+i*direction.Y][x+i*direction.X]
+
 						if nextLineOfSight == floor {
 							continue
 						}
@@ -45,7 +46,9 @@ func (s *seatLayout) runRound() bool {
 						break
 					}
 				}
+
 				grid.ForEachDirection(grid.Point{X: x, Y: y}, callback)
+
 				value, isDirtySeat := processSeat(seat, visibleSeats, s.maxOccupied)
 
 				newRow[x] = value
