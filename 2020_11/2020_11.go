@@ -7,163 +7,59 @@ import "advent_of_code/utils"
 import "advent_of_code/grid"
 
 type seatLayout struct {
-	grid grid.Rune
+	grid        grid.Rune
+	isAdjacent  bool
+	maxOccupied int
 }
-
-// type seatLayout struct {
-// 	grid    grid.Rune
-// 	tracker grid.Point
-// }
 
 const empty = 'L'
 const floor = '.'
 const occupied = '#'
 
-// func (sl *seatLayout) runRound() bool {
-// 	isDirty := false
-// 	newGrid := make(grid.Rune, len(sl.grid))
+func (s *seatLayout) runRound() bool {
+	isDirty := false
+	newGrid := make(grid.Rune, len(s.grid))
 
-// 	for y := 0; y < len(sl.grid); y++ {
-// 		row := sl.grid[y]
-// 		newRow := make(grid.RuneRow, len(row))
+	for y, row := range s.grid {
+		newRow := make(grid.RuneRow, len(row))
 
-// 		for x := 0; x < len(row); x++ {
-// 			sl.x = x
-// 			sl.y = y
-// 			value, isDirtySeat := sl.checkSeat()
+		for x := range row {
+			seat := s.grid[y][x]
 
-// 			newRow[x] = value
-// 			isDirty = isDirty || isDirtySeat
-// 		}
+			if s.isAdjacent {
+				adjacent := s.grid.GetAllAdjacent(grid.Point{X: x, Y: y})
+				value, isDirtySeat := processSeat(seat, adjacent, s.maxOccupied)
 
-// 		newGrid[y] = newRow
-// 	}
+				newRow[x] = value
+				isDirty = isDirty || isDirtySeat
+			} else {
+				visibleSeats := [8]rune{}
+				callback := func(direction grid.Point, index int) {
+					for i := 1; ; i++ {
+						nextLineOfSight := s.grid[y+i*direction.Y][x+i*direction.X]
+						if nextLineOfSight == floor {
+							continue
+						}
 
-// 	sl.grid = newGrid
+						visibleSeats[index] = nextLineOfSight
+						break
+					}
+				}
+				grid.ForEachDirection(grid.Point{X: x, Y: y}, callback)
+				value, isDirtySeat := processSeat(seat, visibleSeats, s.maxOccupied)
 
-// 	return isDirty
-// }
+				newRow[x] = value
+				isDirty = isDirty || isDirtySeat
+			}
+		}
 
-// func (sl *seatLayout) runRoundLineOfSight() bool {
-// 	isDirty := false
-// 	newGrid := make(grid.Rune, len(sl.grid))
+		newGrid[y] = newRow
+	}
 
-// 	for y := 0; y < len(sl.grid); y++ {
-// 		row := sl.grid[y]
-// 		newRow := make(grid.RuneRow, len(row))
+	s.grid = newGrid
 
-// 		for x := 0; x < len(row); x++ {
-// 			sl.x = x
-// 			sl.y = y
-// 			value, isDirtySeat := sl.checkSeatLineOfSight()
-
-// 			newRow[x] = value
-// 			isDirty = isDirty || isDirtySeat
-// 		}
-
-// 		newGrid[y] = newRow
-// 	}
-
-// 	sl.grid = newGrid
-
-// 	return isDirty
-// }
-
-// func (sl *seatLayout) checkSeatLineOfSight() (rune, bool) {
-// 	seat := sl.grid[sl.y][sl.x]
-// 	adjacent := sl.getLightOfSight()
-
-// 	switch seat {
-// 	case empty:
-// 		if hasNoOccupiedAdjacent(adjacent) {
-// 			return occupied, true
-// 		}
-
-// 	case occupied:
-// 		if hasOccupiedAdjacent(adjacent) {
-// 			return empty, true
-// 		}
-// 	}
-
-// 	return seat, false
-// }
-
-// func (sl *seatLayout) checkSeat() (rune, bool) {
-// 	seat := sl.grid[sl.y][sl.x]
-// 	adjacent := sl.getAdjacent()
-
-// 	switch seat {
-// 	case empty:
-// 		if hasNoOccupiedAdjacent(adjacent) {
-// 			return occupied, true
-// 		}
-
-// 	case occupied:
-// 		if hasOccupiedAdjacent(adjacent) {
-// 			return empty, true
-// 		}
-// 	}
-
-// 	return seat, false
-// }
-
-// func (sl *seatLayout) getAdjacent() [8]rune {
-// 	result := [8]rune{}
-
-// 	// top
-// 	result[0] = sl.grid[sl.y-1][sl.x-1]
-// 	result[1] = sl.grid[sl.y-1][sl.x]
-// 	result[2] = sl.grid[sl.y-1][sl.x+1]
-// 	// bottom
-// 	result[3] = sl.grid[sl.y+1][sl.x-1]
-// 	result[4] = sl.grid[sl.y+1][sl.x]
-// 	result[5] = sl.grid[sl.y+1][sl.x+1]
-// 	// mid
-// 	result[6] = sl.grid[sl.y][sl.x-1]
-// 	result[7] = sl.grid[sl.y][sl.x+1]
-
-// 	return result
-// }
-
-// func (sl *seatLayout) getLightOfSight() [8]rune {
-// 	result := [8]rune{}
-// 	directions := make(map[int][2]int, 8)
-// 	directions[0] = [2]int{-1, -1}
-// 	directions[1] = [2]int{-1, 0}
-// 	directions[2] = [2]int{-1, 1}
-// 	directions[3] = [2]int{1, -1}
-// 	directions[4] = [2]int{1, 0}
-// 	directions[5] = [2]int{1, 1}
-// 	directions[6] = [2]int{0, -1}
-// 	directions[7] = [2]int{0, 1}
-
-// 	for i, direction := range directions {
-// 		for j := 1; ; j++ {
-// 			seat := sl.grid[sl.y+j*direction[1]][sl.x+j*direction[0]]
-
-// 			if seat == floor {
-// 				continue
-// 			}
-
-// 			result[i] = seat
-// 			break
-// 		}
-// 	}
-// }
-
-// func (sl *seatLayout) countOccupied() int {
-// 	count := 0
-
-// 	for _, row := range sl.grid {
-// 		for _, char := range row {
-// 			if char == occupied {
-// 				count++
-// 			}
-// 		}
-// 	}
-
-// 	return count
-// }
+	return isDirty
+}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -173,11 +69,14 @@ func main() {
 
 	input := parseInput(rawInput)
 
-	resultA := runA(input)
-	// resultB := lineOfSight(input)
+	resultA := run(input)
+
+	input.maxOccupied = 5
+	input.isAdjacent = false
+	resultB := run(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) seatLayout {
@@ -194,12 +93,12 @@ func parseInput(input string) seatLayout {
 		seatGrid[y] = row
 	}
 
-	return seatLayout{seatGrid}
+	return seatLayout{seatGrid, true, 4}
 }
 
-func runA(input seatLayout) int {
+func run(input seatLayout) int {
 	for {
-		isDirty := input.runRound(false)
+		isDirty := input.runRound()
 
 		if !isDirty {
 			counts := input.grid.CountAll()
@@ -208,88 +107,25 @@ func runA(input seatLayout) int {
 	}
 }
 
-func (s *seatLayout) runRound(lineOfSight bool) bool {
-	isDirty := false
-	newGrid := make(grid.Rune, len(s.grid))
+func processSeat(seat rune, adjacent [8]rune, maxOccupied int) (rune, bool) {
+	seatDistribution := checkSeats(adjacent, seat)
 
-	for y, row := range s.grid {
-		newRow := make(grid.RuneRow, len(row))
-
-		for x := range row {
-			if !lineOfSight {
-				seat := s.grid[y][x]
-
-				adjacent := s.grid.GetAllAdjacent(grid.Point{X: x, Y: y})
-
-				value, isDirtySeat := checkAdjacent(adjacent, seat)
-
-				newRow[x] = value
-				isDirty = isDirty || isDirtySeat
-			}
-		}
-
-		newGrid[y] = newRow
+	if seat == empty && seatDistribution[occupied] == 0 {
+		return occupied, true
 	}
 
-	s.grid = newGrid
-
-	return isDirty
-}
-
-func checkAdjacent(adjacent [8]rune, seat rune) (rune, bool) {
-	switch seat {
-	case empty:
-		if hasNoOccupiedAdjacent(adjacent) {
-			return occupied, true
-		}
-
-	case occupied:
-		if hasOccupiedAdjacent(adjacent) {
-			return empty, true
-		}
+	if seat == occupied && seatDistribution[occupied] >= maxOccupied {
+		return empty, true
 	}
 
 	return seat, false
 }
 
-// func stabalise(input seatLayout) int {
-// 	for {
-// 		isDirty := input.runRound()
-
-// 		if !isDirty {
-// 			return input.countOccupied()
-// 		}
-// 	}
-// }
-
-// func lineOfSight(input seatLayout) int {
-// 	for {
-// 		isDirty := input.runRoundLineOfSight()
-
-// 		if !isDirty {
-// 			return input.countOccupied()
-// 		}
-// 	}
-// }
-
-func hasNoOccupiedAdjacent(input [8]rune) bool {
+func checkSeats(input [8]rune, seat rune) map[rune]int {
+	result := map[rune]int{}
 	for _, space := range input {
-		if space == occupied {
-			return false
-		}
+		result[space]++
 	}
 
-	return true
-}
-
-func hasOccupiedAdjacent(input [8]rune) bool {
-	count := 0
-
-	for _, space := range input {
-		if space == occupied {
-			count++
-		}
-	}
-
-	return count >= 4
+	return result
 }

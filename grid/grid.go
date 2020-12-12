@@ -26,6 +26,7 @@ func (gR *Rune) GetAllAdjacent(input Point) [8]rune {
 
 // RunePrettyPrint - pretty grid
 func (gR *Rune) RunePrettyPrint() string {
+	// TODO: try buffer
 	prettyGrid := ""
 
 	for y := 0; y < len((*gR)); y++ {
