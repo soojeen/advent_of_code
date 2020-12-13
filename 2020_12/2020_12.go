@@ -6,14 +6,13 @@ import "strconv"
 import "strings"
 import "advent_of_code/utils"
 
+type point struct {
+	x int
+	y int
+}
 type ship struct {
 	direction byte
-	x         int
-	y         int
-}
-
-func (s *ship) doAction(input nav) {
-
+	point     point
 }
 
 const north = 'N'
@@ -22,6 +21,43 @@ const east = 'E'
 const west = 'W'
 const left = 'L'
 const right = 'R'
+const forward = 'F'
+
+func turn(input nav, direction byte) byte {
+	directions := [4]byte{north, east, south, west}
+	indexer := map[byte]int{north: 0, east: 1, south: 2, west: 3}
+	shift := input.value / 90
+	index := 0
+
+	if input.action == left {
+		index = indexer[direction] - shift
+	} else {
+		index = indexer[direction] + shift
+	}
+
+	if index < 0 {
+		index += 4
+	} else if index > 3 {
+		index -= 4
+	}
+
+	return directions[index]
+}
+
+func (s *ship) doAction(input nav) {
+	if input.action == left || input.action == right {
+
+		s.direction = turn(input, s.direction)
+		return
+	}
+
+	if input.action == forward {
+		s.point = directionMove(s.point, nav{s.direction, input.value})
+		return
+	}
+
+	s.point = directionMove(s.point, input)
+}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -67,26 +103,36 @@ func parseInput(input string) ([]nav, error) {
 }
 
 func run(input []nav) int {
-	ship := ship{east, 0, 0}
+	ship := ship{east, point{0, 0}}
 
 	for _, nav := range input {
 		ship.doAction(nav)
-		fmt.Println("a:", ship, nav)
 	}
 
-	return ship.x + ship.y
+	return absolute(ship.point.x) + absolute(ship.point.y)
 }
 
-// func generateRotation(currentDirection rune) {
-// 	rotation := map[rune]map[int]map[rune]rune{}
+func directionMove(input point, nav nav) point {
+	result := point{input.x, input.y}
 
-// 	rotation[north][90][left] = west
-// 	rotation[north][180][left] = south
-// 	rotation[north][270][left] = east
+	switch nav.action {
 
-// 	rotation[north][90][right] = east
-// 	rotation[north][180][right] = south
-// 	rotation[north][270][right] = west
+	case north:
+		result.y += nav.value
+	case south:
+		result.y -= nav.value
+	case east:
+		result.x += nav.value
+	case west:
+		result.x -= nav.value
+	}
 
-// 	rotation[]
-// }
+	return result
+}
+
+func absolute(value int) int {
+	if value < 0 {
+		return -value
+	}
+	return value
+}
