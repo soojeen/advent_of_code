@@ -37,7 +37,12 @@ func parseInput(input string) ([]int, error) {
 
 	var err error
 	for i, bus := range buses {
+		if bus == "x" {
+			continue
+		}
+
 		busNumber, e := strconv.Atoi(bus)
+
 		if e != nil {
 			err = e
 			break
@@ -50,5 +55,28 @@ func parseInput(input string) ([]int, error) {
 }
 
 func processA(input []int) int {
-	return 0
+	currentTime := input[0]
+	buses := input[1:]
+	nextBus := 0
+	timeToNext := -1
+
+	for _, bus := range buses {
+		if bus == 0 {
+			continue
+		}
+
+		// assume no bus leaving exactly at curentTime
+		next := (currentTime / bus * bus) + bus
+		diff := next - currentTime
+
+		if timeToNext < 0 || diff < timeToNext {
+			timeToNext = diff
+			nextBus = bus
+		}
+	}
+	fmt.Println("a:", nextBus, timeToNext)
+
+	return nextBus * timeToNext
 }
+
+// 299 high
