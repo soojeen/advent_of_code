@@ -90,6 +90,7 @@ func processB(input []int) int {
 		for j := baseDiff; ; j += currentDiff {
 			nextBusDiff := nextBusArrival(j, bus)
 
+			// modulus because bus index offset could be greater than bus time
 			if nextBusDiff == (i%bus)+1 {
 				baseDiff = j
 				currentDiff *= bus
