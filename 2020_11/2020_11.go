@@ -111,7 +111,7 @@ func run(input seatLayout) int {
 }
 
 func processSeat(seat rune, adjacent [8]rune, maxOccupied int) (rune, bool) {
-	seatDistribution := checkSeats(adjacent, seat)
+	seatDistribution := checkSeats(adjacent)
 
 	if seat == empty && seatDistribution[occupied] == 0 {
 		return occupied, true
@@ -124,10 +124,10 @@ func processSeat(seat rune, adjacent [8]rune, maxOccupied int) (rune, bool) {
 	return seat, false
 }
 
-func checkSeats(input [8]rune, seat rune) map[rune]int {
+func checkSeats(input [8]rune) map[rune]int {
 	result := map[rune]int{}
-	for _, space := range input {
-		result[space]++
+	for _, seat := range input {
+		result[seat]++
 	}
 
 	return result
