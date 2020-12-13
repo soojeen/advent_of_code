@@ -45,19 +45,22 @@ func (s *ship) doActionA(input nav) {
 	s.location = addVector(s.location, vector)
 }
 
-// func (s *ship) doActionB(input nav) {
-// 	if input.action == left || input.action == right {
-// 		s.waypoint = turnWaypoint(s.point, s.waypoint, input)
-// 		return
-// 	}
+func (s *ship) doActionB(input nav) {
+	if input.action == left || input.action == right {
+		s.waypoint = turnVector(s.direction, input)
+		return
+	}
 
-// 	if input.action == forward {
-// 		s.point, s.waypoint = moveToWayPoint(s.point, s.waypoint, input.value)
-// 		return
-// 	}
+	if input.action == forward {
+		vector := mulitplyVector(s.waypoint, input.value)
+		s.location = addVector(s.location, vector)
+		return
+	}
 
-// 	s.waypoint = directionMoveLegacy(s.waypoint, input)
-// }
+	vector := getDirectionVector(input.action)
+	vector = mulitplyVector(vector, input.value)
+	s.waypoint = addVector(s.waypoint, vector)
+}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -71,10 +74,10 @@ func main() {
 	}
 
 	resultA := runA(input)
-	// resultB := runB(input)
+	resultB := runB(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]nav, error) {
@@ -98,7 +101,7 @@ func parseInput(input string) ([]nav, error) {
 }
 
 func runA(input []nav) int {
-	ship := ship{getDirectionVector('E'), point{0, 0}, point{0, 0}}
+	ship := ship{getDirectionVector(east), point{0, 0}, point{0, 0}}
 
 	for _, nav := range input {
 		ship.doActionA(nav)
@@ -107,20 +110,15 @@ func runA(input []nav) int {
 	return absolute(ship.location.x) + absolute(ship.location.y)
 }
 
-// func runB(input []nav) int {
-// 	ship := ship{east, point{0, 0}, point{10, 1}}
+func runB(input []nav) int {
+	ship := ship{getDirectionVector(east), point{0, 0}, point{10, 1}}
 
-// 	for _, nav := range input {
-// 		ship.doActionB(nav)
-// 	}
+	for _, nav := range input {
+		ship.doActionB(nav)
+	}
 
-// 	fmt.Println("vector:", turnVector90L(point{1, 0}))
-// 	fmt.Println("vector:", turnVector90L(point{0, 1}))
-// 	fmt.Println("vector:", turnVector90L(point{-1, 0}))
-// 	fmt.Println("vector:", turnVector90L(point{0, -1}))
-
-// 	return absolute(ship.point.x) + absolute(ship.point.y)
-// }
+	return absolute(ship.location.x) + absolute(ship.location.y)
+}
 
 // func directionMoveLegacy(input point, nav nav) point {
 
