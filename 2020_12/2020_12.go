@@ -109,11 +109,8 @@ func runB(input []nav) int {
 	ship := ship{east, point{0, 0}, point{10, 1}}
 
 	for _, nav := range input {
-		fmt.Println("b:", ship.point, ship.waypoint)
-
 		ship.doActionB(nav)
 	}
-	fmt.Println("b:", ship.point, ship.waypoint)
 
 	return absolute(ship.point.x) + absolute(ship.point.y)
 }
@@ -185,7 +182,6 @@ func turnWaypoint(shipPoint point, waypoint point, input nav) point {
 
 	newDirection := turn(input, string(direction)[0])
 	aVector := point{absolute(vector.x), absolute(vector.y)}
-	fmt.Println("turn:", vector, string(direction), string(newDirection))
 	if newDirection == north {
 		return point{shipPoint.x + aVector.y, shipPoint.y + aVector.x}
 	} else if newDirection == east {
