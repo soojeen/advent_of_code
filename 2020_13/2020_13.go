@@ -66,8 +66,7 @@ func processA(input []int) int {
 		}
 
 		// assume no bus leaving exactly at curentTime
-		next := (currentTime / bus * bus) + bus
-		diff := next - currentTime
+		diff := nextBusArrival(currentTime, bus)
 
 		if timeToNext < 0 || diff < timeToNext {
 			timeToNext = diff
@@ -80,51 +79,29 @@ func processA(input []int) int {
 
 func processB(input []int) int {
 	buses := input[2:]
-	earliest := 0
+	baseDiff := input[1]
+	currentDiff := input[1]
 
-	for i := 0; ; i++ {
-		firstBus := i * input[1]
+	for i, bus := range buses {
+		if bus == 0 {
+			continue
+		}
 
-		isAllValid := true
-		for j, bus := range buses {
-			if bus == 0 {
-				continue
-			}
+		for j := baseDiff; ; j += currentDiff {
+			nextBusDiff := nextBusArrival(j, bus)
 
-			nextBusDiff := nextBusArrival(firstBus, bus)
-			// fmt.Println("b:", bus, nextBusDiff, j)
-
-			if nextBusDiff != j+1 {
-				isAllValid = false
+			if nextBusDiff == (i%bus)+1 {
+				baseDiff = j
+				currentDiff *= bus
 				break
 			}
 		}
-
-		if isAllValid {
-			earliest = firstBus
-			break
-		}
-
-		// fmt.Println("b:", firstBus)
-		// if i > 100 {
-		// 	break
-		// }
-
 	}
 
-	// for each departure time of first bus
-	// 	for each subsequent bus
-	// 		check diff against index constraint
-
-	return earliest
+	return baseDiff
 }
 
 func nextBusArrival(currentTime int, bus int) int {
 	next := (currentTime / bus * bus) + bus
 	return next - currentTime
 }
-
-// 299 high
-
-// 1068781
-// 1068781
