@@ -13,6 +13,7 @@ type point struct {
 type ship struct {
 	direction byte
 	point     point
+	waypoint  point
 }
 
 const north = 'N'
@@ -23,30 +24,8 @@ const left = 'L'
 const right = 'R'
 const forward = 'F'
 
-func turn(input nav, direction byte) byte {
-	directions := [4]byte{north, east, south, west}
-	indexer := map[byte]int{north: 0, east: 1, south: 2, west: 3}
-	shift := input.value / 90
-	index := 0
-
-	if input.action == left {
-		index = indexer[direction] - shift
-	} else {
-		index = indexer[direction] + shift
-	}
-
-	if index < 0 {
-		index += 4
-	} else if index > 3 {
-		index -= 4
-	}
-
-	return directions[index]
-}
-
-func (s *ship) doAction(input nav) {
+func (s *ship) doActionA(input nav) {
 	if input.action == left || input.action == right {
-
 		s.direction = turn(input, s.direction)
 		return
 	}
@@ -57,6 +36,20 @@ func (s *ship) doAction(input nav) {
 	}
 
 	s.point = directionMove(s.point, input)
+}
+
+func (s *ship) doActionB(input nav) {
+	if input.action == left || input.action == right {
+		s.waypoint = turnWaypoint(s.point, s.waypoint, input)
+		return
+	}
+
+	if input.action == forward {
+		s.point, s.waypoint = moveToWayPoint(s.point, s.waypoint, input.value)
+		return
+	}
+
+	s.waypoint = directionMove(s.waypoint, input)
 }
 
 func main() {
@@ -70,11 +63,11 @@ func main() {
 		log.Fatal(readError)
 	}
 
-	resultA := run(input)
-	// resultB := run(input)
+	resultA := runA(input)
+	resultB := runB(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 type nav struct {
@@ -102,12 +95,25 @@ func parseInput(input string) ([]nav, error) {
 	return result, err
 }
 
-func run(input []nav) int {
-	ship := ship{east, point{0, 0}}
+func runA(input []nav) int {
+	ship := ship{east, point{0, 0}, point{0, 0}}
 
 	for _, nav := range input {
-		ship.doAction(nav)
+		ship.doActionA(nav)
 	}
+
+	return absolute(ship.point.x) + absolute(ship.point.y)
+}
+
+func runB(input []nav) int {
+	ship := ship{east, point{0, 0}, point{10, 1}}
+
+	for _, nav := range input {
+		fmt.Println("b:", ship.point, ship.waypoint)
+
+		ship.doActionB(nav)
+	}
+	fmt.Println("b:", ship.point, ship.waypoint)
 
 	return absolute(ship.point.x) + absolute(ship.point.y)
 }
@@ -128,6 +134,67 @@ func directionMove(input point, nav nav) point {
 	}
 
 	return result
+}
+
+func turn(input nav, direction byte) byte {
+	directions := [4]byte{north, east, south, west}
+	indexer := map[byte]int{north: 0, east: 1, south: 2, west: 3}
+	shift := input.value / 90
+	index := 0
+
+	if input.action == left {
+		index = indexer[direction] - shift
+	} else {
+		index = indexer[direction] + shift
+	}
+
+	if index < 0 {
+		index += 4
+	} else if index > 3 {
+		index -= 4
+	}
+
+	return directions[index]
+}
+
+func moveToWayPoint(shipPoint point, waypoint point, value int) (point, point) {
+	xDiff := value * (waypoint.x - shipPoint.x)
+	yDiff := value * (waypoint.y - shipPoint.y)
+
+	newShipPoint := point{shipPoint.x + xDiff, shipPoint.y + yDiff}
+	newWaypoint := point{waypoint.x + xDiff, waypoint.y + yDiff}
+
+	return newShipPoint, newWaypoint
+}
+
+func turnWaypoint(shipPoint point, waypoint point, input nav) point {
+	vector := point{waypoint.x - shipPoint.x, waypoint.y - shipPoint.y}
+
+	if input.value == 180 {
+		return point{shipPoint.x - vector.x, shipPoint.y - vector.y}
+	}
+
+	direction := north
+	if vector.x > 0 && vector.y <= 0 {
+		direction = east
+	} else if vector.x <= 0 && vector.y < 0 {
+		direction = south
+	} else if vector.x < 0 && vector.y >= 0 {
+		direction = west
+	}
+
+	newDirection := turn(input, string(direction)[0])
+	aVector := point{absolute(vector.x), absolute(vector.y)}
+	fmt.Println("turn:", vector, string(direction), string(newDirection))
+	if newDirection == north {
+		return point{shipPoint.x + aVector.y, shipPoint.y + aVector.x}
+	} else if newDirection == east {
+		return point{shipPoint.x + aVector.y, shipPoint.y - aVector.x}
+	} else if newDirection == south {
+		return point{shipPoint.x - aVector.y, shipPoint.y - aVector.x}
+	} else {
+		return point{shipPoint.x - aVector.y, shipPoint.y + aVector.x}
+	}
 }
 
 func absolute(value int) int {
