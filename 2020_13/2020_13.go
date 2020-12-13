@@ -18,10 +18,10 @@ func main() {
 	}
 
 	resultA := processA(input)
-	// resultB := findSeatID(input)
+	resultB := processB(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) ([]int, error) {
@@ -74,9 +74,57 @@ func processA(input []int) int {
 			nextBus = bus
 		}
 	}
-	fmt.Println("a:", nextBus, timeToNext)
 
 	return nextBus * timeToNext
 }
 
+func processB(input []int) int {
+	buses := input[2:]
+	earliest := 0
+
+	for i := 0; ; i++ {
+		firstBus := i * input[1]
+
+		isAllValid := true
+		for j, bus := range buses {
+			if bus == 0 {
+				continue
+			}
+
+			nextBusDiff := nextBusArrival(firstBus, bus)
+			// fmt.Println("b:", bus, nextBusDiff, j)
+
+			if nextBusDiff != j+1 {
+				isAllValid = false
+				break
+			}
+		}
+
+		if isAllValid {
+			earliest = firstBus
+			break
+		}
+
+		// fmt.Println("b:", firstBus)
+		// if i > 100 {
+		// 	break
+		// }
+
+	}
+
+	// for each departure time of first bus
+	// 	for each subsequent bus
+	// 		check diff against index constraint
+
+	return earliest
+}
+
+func nextBusArrival(currentTime int, bus int) int {
+	next := (currentTime / bus * bus) + bus
+	return next - currentTime
+}
+
 // 299 high
+
+// 1068781
+// 1068781
