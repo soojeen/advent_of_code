@@ -47,7 +47,7 @@ func (s *ship) doActionA(input nav) {
 
 func (s *ship) doActionB(input nav) {
 	if input.action == left || input.action == right {
-		s.waypoint = turnVector(s.direction, input)
+		s.waypoint = turnVector(s.waypoint, input)
 		return
 	}
 
@@ -119,85 +119,6 @@ func runB(input []nav) int {
 
 	return absolute(ship.location.x) + absolute(ship.location.y)
 }
-
-// func directionMoveLegacy(input point, nav nav) point {
-
-// 	result := point{input.x, input.y}
-
-// 	switch nav.action {
-
-// 	case north:
-// 		result.y += nav.value
-// 	case south:
-// 		result.y -= nav.value
-// 	case east:
-// 		result.x += nav.value
-// 	case west:
-// 		result.x -= nav.value
-// 	}
-
-// 	return result
-// }
-
-// func turn(input nav, direction byte) byte {
-// 	directions := [4]byte{north, east, south, west}
-// 	indexer := map[byte]int{north: 0, east: 1, south: 2, west: 3}
-// 	shift := input.value / 90
-// 	index := 0
-
-// 	if input.action == left {
-// 		index = indexer[direction] - shift
-// 	} else {
-// 		index = indexer[direction] + shift
-// 	}
-
-// 	if index < 0 {
-// 		index += 4
-// 	} else if index > 3 {
-// 		index -= 4
-// 	}
-
-// 	return directions[index]
-// }
-
-// func moveToWayPoint(shipPoint point, waypoint point, value int) (point, point) {
-// 	xDiff := value * (waypoint.x - shipPoint.x)
-// 	yDiff := value * (waypoint.y - shipPoint.y)
-
-// 	newShipPoint := point{shipPoint.x + xDiff, shipPoint.y + yDiff}
-// 	newWaypoint := point{waypoint.x + xDiff, waypoint.y + yDiff}
-
-// 	return newShipPoint, newWaypoint
-// }
-
-// func turnWaypoint(shipPoint point, waypoint point, input nav) point {
-// 	vector := point{waypoint.x - shipPoint.x, waypoint.y - shipPoint.y}
-
-// 	if input.value == 180 {
-// 		return point{shipPoint.x - vector.x, shipPoint.y - vector.y}
-// 	}
-
-// 	direction := north
-// 	if vector.x > 0 && vector.y <= 0 {
-// 		direction = east
-// 	} else if vector.x <= 0 && vector.y < 0 {
-// 		direction = south
-// 	} else if vector.x < 0 && vector.y >= 0 {
-// 		direction = west
-// 	}
-
-// 	newDirection := turn(input, string(direction)[0])
-// 	aVector := point{absolute(vector.x), absolute(vector.y)}
-// 	if newDirection == north {
-// 		return point{shipPoint.x + aVector.y, shipPoint.y + aVector.x}
-// 	} else if newDirection == east {
-// 		return point{shipPoint.x + aVector.y, shipPoint.y - aVector.x}
-// 	} else if newDirection == south {
-// 		return point{shipPoint.x - aVector.y, shipPoint.y - aVector.x}
-// 	} else {
-// 		return point{shipPoint.x - aVector.y, shipPoint.y + aVector.x}
-// 	}
-// }
 
 func turnVector(input point, nav nav) point {
 	result := input
