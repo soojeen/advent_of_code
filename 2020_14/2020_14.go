@@ -74,7 +74,7 @@ func processA(input []decoder) int {
 			continue
 		}
 
-		masked := bitMask(decoder.valueB, mask)
+		masked := bitMaskA(decoder.valueB, mask)
 		maskedValue, _ := strconv.ParseInt(masked, 2, 0)
 		memory[decoder.address] = int(maskedValue)
 	}
@@ -116,17 +116,17 @@ func padLeft(input string, padding string, length int) string {
 	return b.String()
 }
 
-func bitMask(value string, mask string) string {
-	x := "X"[0]
+func bitMaskA(value string, mask string) string {
+	x := "X"
 	var b bytes.Buffer
 
 	for i := 0; i < len(value); i++ {
-		bitMask := mask[i]
+		bit := mask[i]
 
-		if bitMask == x {
+		if bit == x[0] {
 			b.WriteByte(value[i])
 		} else {
-			b.WriteByte(bitMask)
+			b.WriteByte(bit)
 		}
 	}
 
@@ -134,21 +134,22 @@ func bitMask(value string, mask string) string {
 }
 
 func bitMaskB(value string, mask string) []string {
-	result := []string{}
-	z := "0"
-	o := "1"
+	zero := "0"
+	one := "1"
 	x := "X"
+
 	var b bytes.Buffer
+	result := []string{}
 	xCount := 0
 
 	for i := 0; i < len(mask); i++ {
-		bitMask := mask[i]
+		bit := mask[i]
 
-		if bitMask == o[0] {
-			b.WriteByte(o[0])
-		} else if bitMask == z[0] {
+		if bit == one[0] {
+			b.WriteByte(one[0])
+		} else if bit == zero[0] {
 			b.WriteByte(value[i])
-		} else if bitMask == x[0] {
+		} else if bit == x[0] {
 			xCount++
 			b.WriteByte(x[0])
 		}
@@ -159,7 +160,7 @@ func bitMaskB(value string, mask string) []string {
 	for i := 0; i < int(counts); i++ {
 		varMask := b.String()
 		iB := strconv.FormatInt(int64(i), 2)
-		iB = padLeft(iB, z, xCount)
+		iB = padLeft(iB, zero, xCount)
 
 		for _, char := range iB {
 			varMask = strings.Replace(varMask, x, string(char), 1)
