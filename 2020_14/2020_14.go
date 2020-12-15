@@ -3,6 +3,7 @@ package main
 import "bytes"
 import "fmt"
 import "log"
+import "math"
 import "regexp"
 import "strconv"
 import "strings"
@@ -134,22 +135,37 @@ func bitMask(value string, mask string) string {
 
 func bitMaskB(value string, mask string) []string {
 	result := []string{}
-	string := "X01"
-	x := string[0]
-	z := string[1]
-	o := string[2]
+	z := "0"
+	o := "1"
+	x := "X"
 	var b bytes.Buffer
+	xCount := 0
 
-	for i := 0; i < len(value); i++ {
+	for i := 0; i < len(mask); i++ {
 		bitMask := mask[i]
 
-		if bitMask == o {
-			b.WriteByte(o)
-		} else if bitMask == z {
+		if bitMask == o[0] {
+			b.WriteByte(o[0])
+		} else if bitMask == z[0] {
 			b.WriteByte(value[i])
-		} else if bitMask == x {
-			// TODO branch
+		} else if bitMask == x[0] {
+			xCount++
+			b.WriteByte(x[0])
 		}
+	}
+
+	counts := math.Pow(2, float64(xCount))
+
+	for i := 0; i < int(counts); i++ {
+		varMask := b.String()
+		iB := strconv.FormatInt(int64(i), 2)
+		iB = padLeft(iB, z, xCount)
+
+		for _, char := range iB {
+			varMask = strings.Replace(varMask, x, string(char), 1)
+		}
+
+		result = append(result, varMask)
 	}
 
 	return result
