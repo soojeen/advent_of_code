@@ -129,12 +129,12 @@ func charCountHasCount(charCounts map[string]int, count int) bool {
 func uniqueCharCount(str string) map[string]int {
 	charCounts := make(map[string]int)
 
-	for _, rune := range str {
-		char := string(rune)
-		if charCounts[char] == 0 {
-			charCounts[char] = 1
+	for _, char := range str {
+		charS := string(char)
+		if charCounts[charS] == 0 {
+			charCounts[charS] = 1
 		} else {
-			charCounts[char] += 1
+			charCounts[charS]++
 		}
 	}
 
