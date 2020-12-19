@@ -2,50 +2,36 @@ package main
 
 import "fmt"
 
-type prev struct {
-	isFirst bool
-	age     int
-}
-
 func main() {
 	input := []int{20, 9, 11, 0, 1, 2}
 
 	resultA := processA(input, 2020)
-	// resultB := processB(input)
+	resultB := processA(input, 30000000)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func processA(input []int, end int) int {
 	tracker := map[int]int{}
+	prevDiff := 0
 	result := 0
-	last := prev{false, 0}
 
 	for i := 1; i <= end; i++ {
+		// initialize tracker with input
 		if i < len(input)+1 {
-			value := input[i-1]
-			tracker[value] = i
-			result = value
-			last = prev{true, 0}
+			tracker[input[i-1]] = i
 			continue
 		}
 
-		if last.isFirst {
-			value := 0
-			last = prev{false, i - tracker[value]}
-
-			tracker[value] = i
-			result = value
-			continue
-		}
-
-		value := last.age
+		// prevDiff defaults to 0 if prev is first
+		value := prevDiff
 		if tracker[value] == 0 {
-			last = prev{true, 0}
+			prevDiff = 0
 		} else {
-			last = prev{false, i - tracker[value]}
+			prevDiff = i - tracker[value]
 		}
+
 		tracker[value] = i
 		result = value
 	}
