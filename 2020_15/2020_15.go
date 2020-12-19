@@ -2,8 +2,9 @@ package main
 
 import "fmt"
 
-type meta struct {
-	prevTurn int
+type prev struct {
+	isFirst bool
+	age     int
 }
 
 func main() {
@@ -17,35 +18,37 @@ func main() {
 }
 
 func processA(input []int) int {
-	tracker := map[int]meta{}
+	tracker := map[int]int{}
 	turns := make([]int, 2020)
-	prevDiff := 0
-	prev := 0
-	prevIsFirst := true
+	last := prev{false, 0}
 
-	for i := 1; i <= 2020; i++ {
+	for i := 1; i <= len(turns); i++ {
 		if i < len(input)+1 {
 			value := input[i-1]
-			tracker[value] = meta{i}
+			tracker[value] = i
 			turns[i-1] = value
-			prev = value
+			last = prev{true, 0}
 			continue
 		}
 
-		if prevIsFirst {
-			prev = 0
-			prevDiff = i - tracker[0].prevTurn
-			prevIsFirst = false
-			tracker[0] = meta{i}
-			turns[i-1] = 0
+		if last.isFirst {
+			value := 0
+			last = prev{false, i - tracker[value]}
+
+			tracker[value] = i
+			turns[i-1] = value
 			continue
 		}
 
-		if i > 20 {
-			break
+		value := last.age
+		if tracker[value] == 0 {
+			last = prev{true, 0}
+		} else {
+			last = prev{false, i - tracker[value]}
 		}
+		tracker[value] = i
+		turns[i-1] = value
 	}
-	fmt.Println("a:", tracker, turns, prev, prevDiff)
 
-	return 0
+	return turns[2020-1]
 }
