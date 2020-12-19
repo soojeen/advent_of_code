@@ -10,23 +10,23 @@ type prev struct {
 func main() {
 	input := []int{20, 9, 11, 0, 1, 2}
 
-	resultA := processA(input)
+	resultA := processA(input, 2020)
 	// resultB := processB(input)
 
 	fmt.Println("a:", resultA)
 	// fmt.Println("b:", resultB)
 }
 
-func processA(input []int) int {
+func processA(input []int, end int) int {
 	tracker := map[int]int{}
-	turns := make([]int, 2020)
+	result := 0
 	last := prev{false, 0}
 
-	for i := 1; i <= len(turns); i++ {
+	for i := 1; i <= end; i++ {
 		if i < len(input)+1 {
 			value := input[i-1]
 			tracker[value] = i
-			turns[i-1] = value
+			result = value
 			last = prev{true, 0}
 			continue
 		}
@@ -36,7 +36,7 @@ func processA(input []int) int {
 			last = prev{false, i - tracker[value]}
 
 			tracker[value] = i
-			turns[i-1] = value
+			result = value
 			continue
 		}
 
@@ -47,8 +47,8 @@ func processA(input []int) int {
 			last = prev{false, i - tracker[value]}
 		}
 		tracker[value] = i
-		turns[i-1] = value
+		result = value
 	}
 
-	return turns[2020-1]
+	return result
 }
