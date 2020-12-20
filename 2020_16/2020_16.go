@@ -37,12 +37,7 @@ func (p *puzzleInput) getFieldPossibles() map[string][]int {
 		valids := []int{}
 
 		for i := 0; i < len(p.ticket); i++ {
-			values := make([]int, len(validTickets))
-
-			for j, ticket := range validTickets {
-				values[j] = ticket[i]
-			}
-
+			values := getValuesForIndex(validTickets, i)
 			isValid := true
 
 			for _, value := range values {
@@ -89,10 +84,11 @@ func parseInput(input string) puzzleInput {
 	ticketParts := strings.Split(parts[1], "\n")
 	ticket := parseTicket(ticketParts[1])
 
-	ticketsParts := strings.Split(parts[2], "\n")
-	tickets := make([][]int, len(ticketsParts)-1)
-	for i, ticket := range ticketsParts[1:] {
-		ticket := parseTicket(ticket)
+	rawTickets := strings.Split(parts[2], "\n")
+	tickets := make([][]int, len(rawTickets)-1)
+
+	for i, rawTicket := range rawTickets[1:] {
+		ticket := parseTicket(rawTicket)
 		tickets[i] = ticket
 	}
 
@@ -107,7 +103,7 @@ func parseTicketFields(input string) ticketFields {
 	ticketFields := make(ticketFields, len(fields))
 
 	for _, field := range fields {
-		label := labelRe.FindStringSubmatch(field)
+		label := labelRe.FindStringSubmatch(field)[1]
 		rawRanges := rangesRe.FindAllString(field, -1)
 
 		validRanges := [2][2]int{}
@@ -123,7 +119,7 @@ func parseTicketFields(input string) ticketFields {
 			validRanges[i] = minMaxRange
 		}
 
-		ticketFields[label[1]] = validRanges
+		ticketFields[label] = validRanges
 	}
 
 	return ticketFields
@@ -147,7 +143,7 @@ func processA(input puzzleInput) int {
 	for _, ticket := range input.tickets {
 		value := invalidValue(ticket, input.ticketFields)
 
-		if value >= 0 {
+		if value > 0 {
 			result += value
 		}
 	}
@@ -208,4 +204,14 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 	}
 
 	return -1
+}
+
+func getValuesForIndex(input [][]int, index int) []int {
+	values := make([]int, len(input))
+
+	for j, ticket := range input {
+		values[j] = ticket[index]
+	}
+
+	return values
 }
