@@ -170,7 +170,6 @@ func processB(input puzzleInput) int {
 			}
 
 			used[possible] = true
-
 		}
 	}
 
