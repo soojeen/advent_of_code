@@ -29,12 +29,19 @@ func (p *puzzleInput) getValidTickets() [][]int {
 	return validTickets
 }
 
-func (p *puzzleInput) getFieldPossibles() map[string][]int {
-	tracker := map[string][]int{}
+type fieldPossibles struct {
+	label     string
+	possibles []int
+}
+
+func (p *puzzleInput) getFieldPossibles() []fieldPossibles {
+	result := make([]fieldPossibles, len(p.ticketFields))
+
 	validTickets := p.getValidTickets()
 
 	for label, fieldRanges := range p.ticketFields {
 		valids := []int{}
+		count := 0
 
 		for i := 0; i < len(p.ticket); i++ {
 			values := getValuesForIndex(validTickets, i)
@@ -55,10 +62,11 @@ func (p *puzzleInput) getFieldPossibles() map[string][]int {
 			}
 		}
 
-		tracker[label] = valids
+		result[len(valids)-1] = fieldPossibles{label, valids}
+		count++
 	}
 
-	return tracker
+	return result
 }
 
 func main() {
@@ -147,24 +155,17 @@ func processA(input puzzleInput) int {
 }
 
 func processB(input puzzleInput) int {
-	fieldPossibles := input.getFieldPossibles()
 	final := map[string]int{}
 	used := map[int]bool{}
 
-	for i := 0; ; i++ {
-		for label, possibles := range fieldPossibles {
-			if len(possibles) == i+1 {
-				for _, possible := range possibles {
-					if !used[possible] {
-						final[label] = possible
-						used[possible] = true
-					}
-				}
-			}
-		}
+	orderedPossibles := input.getFieldPossibles()
 
-		if i == 20 {
-			break
+	for _, fieldPossibles := range orderedPossibles {
+		for _, possible := range fieldPossibles.possibles {
+			if !used[possible] {
+				final[fieldPossibles.label] = possible
+				used[possible] = true
+			}
 		}
 	}
 
