@@ -157,11 +157,9 @@ func processA(input puzzleInput) int {
 
 func processB(input puzzleInput) int {
 	fieldPossibles := input.getFieldPossibles()
-	result := 1
-	// labelRe := regexp.MustCompile(`departure`)
-
 	final := map[string]int{}
 	used := map[int]bool{}
+
 	for i := 0; ; i++ {
 		for label, possibles := range fieldPossibles {
 			if len(possibles) == i+1 {
@@ -179,7 +177,14 @@ func processB(input puzzleInput) int {
 		}
 	}
 
-	fmt.Println("b:", final)
+	result := 1
+	labelRe := regexp.MustCompile(`departure`)
+
+	for label, index := range final {
+		if labelRe.MatchString(label) {
+			result *= input.ticket[index]
+		}
+	}
 
 	return result
 }
@@ -204,5 +209,3 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 
 	return -1
 }
-
-// 226579501483809923 high
