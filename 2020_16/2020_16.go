@@ -24,10 +24,10 @@ func main() {
 	input := parseInput(rawInput)
 
 	resultA := processA(input)
-	// resultB := processB(input)
+	resultB := processB(input)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) puzzleInput {
@@ -100,6 +100,24 @@ func processA(input puzzleInput) int {
 	return result
 }
 
+func processB(input puzzleInput) int {
+	result := 0
+	validTickets := [][]int{}
+
+	for _, ticket := range input.tickets {
+		invalid := invalidValue(ticket, input.ticketFields)
+
+		if invalid != 0 {
+			validTickets = append(validTickets, ticket)
+		}
+	}
+
+	fmt.Println("b:", len(validTickets))
+	fmt.Println("b:", validTickets)
+
+	return result
+}
+
 func invalidValue(input []int, ticketFields ticketFields) int {
 	for _, value := range input {
 		isValid := false
@@ -119,4 +137,29 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 	}
 
 	return 0
+}
+
+func validField(input []int, ticketFields ticketFields) string {
+	result := ""
+
+	for label, fieldRanges := range ticketFields {
+		isValid := true
+
+		for _, value := range input {
+			rangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
+			rangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
+
+			if !rangeA && !rangeB {
+				return label
+				result = label
+				break
+			}
+		}
+
+		if !isValid {
+			break
+		}
+	}
+
+	return result
 }
