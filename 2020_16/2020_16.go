@@ -15,6 +15,57 @@ type puzzleInput struct {
 	tickets      [][]int
 }
 
+func (p *puzzleInput) getValidTickets() [][]int {
+	validTickets := [][]int{}
+
+	for _, ticket := range p.tickets {
+		invalid := invalidValue(ticket, p.ticketFields)
+
+		if invalid == -1 {
+			validTickets = append(validTickets, ticket)
+		}
+	}
+
+	return validTickets
+}
+
+func (p *puzzleInput) getFieldPossibles() map[string][]int {
+	tracker := map[string][]int{}
+	validTickets := p.getValidTickets()
+
+	for label, fieldRanges := range p.ticketFields {
+		valids := []int{}
+
+		for i := 0; i < len(p.ticket); i++ {
+			values := make([]int, len(validTickets))
+
+			for j, ticket := range validTickets {
+				values[j] = ticket[i]
+			}
+
+			isValid := true
+
+			for _, value := range values {
+				isInRangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
+				isInRangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
+
+				if !isInRangeA && !isInRangeB {
+					isValid = false
+					break
+				}
+			}
+
+			if isValid {
+				valids = append(valids, i)
+			}
+		}
+
+		tracker[label] = valids
+	}
+
+	return tracker
+}
+
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
 	if readError != nil {
@@ -105,50 +156,30 @@ func processA(input puzzleInput) int {
 }
 
 func processB(input puzzleInput) int {
+	fieldPossibles := input.getFieldPossibles()
 	result := 1
-	validTickets := [][]int{}
 	// labelRe := regexp.MustCompile(`departure`)
 
-	for _, ticket := range input.tickets {
-		invalid := invalidValue(ticket, input.ticketFields)
-
-		if invalid == -1 {
-			validTickets = append(validTickets, ticket)
-		}
-	}
-
-	tracker := map[string][]int{}
-	for label, fieldRanges := range input.ticketFields {
-		valids := []int{}
-
-		for i := 0; i < len(input.ticket); i++ {
-			values := make([]int, len(validTickets))
-
-			for j, ticket := range validTickets {
-				values[j] = ticket[i]
-			}
-
-			isValid := true
-
-			for _, value := range values {
-				isInRangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
-				isInRangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
-
-				if !isInRangeA && !isInRangeB {
-					isValid = false
-					break
+	final := map[string]int{}
+	used := map[int]bool{}
+	for i := 0; ; i++ {
+		for label, possibles := range fieldPossibles {
+			if len(possibles) == i+1 {
+				for _, possible := range possibles {
+					if !used[possible] {
+						final[label] = possible
+						used[possible] = true
+					}
 				}
 			}
-
-			if isValid {
-				valids = append(valids, i)
-			}
 		}
 
-		tracker[label] = valids
+		if i == 20 {
+			break
+		}
 	}
 
-	fmt.Println("b:", tracker)
+	fmt.Println("b:", final)
 
 	return result
 }
@@ -172,28 +203,6 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 	}
 
 	return -1
-}
-
-func validField(input []int, ticketFields ticketFields) string {
-	for label, fieldRanges := range ticketFields {
-		isValid := true
-
-		for _, value := range input {
-			isInRangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
-			isInRangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
-
-			if !isInRangeA && !isInRangeB {
-				isValid = false
-				break
-			}
-		}
-
-		if isValid {
-			return label
-		}
-	}
-
-	return ""
 }
 
 // 226579501483809923 high
