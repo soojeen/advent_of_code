@@ -7,7 +7,7 @@ import "strconv"
 import "strings"
 import "advent_of_code/utils"
 
-type ticketFields map[string][2][2]int
+type ticketFields map[string][4]int
 
 type puzzleInput struct {
 	ticketFields ticketFields
@@ -41,8 +41,8 @@ func (p *puzzleInput) getFieldPossibles() map[string][]int {
 			isValid := true
 
 			for _, value := range values {
-				isInRangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
-				isInRangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
+				isInRangeA := value >= fieldRanges[0] && value <= fieldRanges[1]
+				isInRangeB := value >= fieldRanges[2] && value <= fieldRanges[3]
 
 				if !isInRangeA && !isInRangeB {
 					isValid = false
@@ -97,26 +97,19 @@ func parseInput(input string) puzzleInput {
 
 func parseTicketFields(input string) ticketFields {
 	labelRe := regexp.MustCompile(`(.*):`)
-	rangesRe := regexp.MustCompile(`\d*-\d*`)
+	rangesRe := regexp.MustCompile(`(\d*)-(\d*) or (\d*)-(\d*)`)
 
 	fields := strings.Split(input, "\n")
 	ticketFields := make(ticketFields, len(fields))
 
 	for _, field := range fields {
 		label := labelRe.FindStringSubmatch(field)[1]
-		rawRanges := rangesRe.FindAllString(field, -1)
+		rawRanges := rangesRe.FindStringSubmatch(field)
 
-		validRanges := [2][2]int{}
-		for i, rawRange := range rawRanges {
-			rangeParts := strings.Split(rawRange, "-")
-			minMaxRange := [2]int{}
-
-			for j, rangePart := range rangeParts {
-				value, _ := strconv.Atoi(rangePart)
-				minMaxRange[j] = value
-			}
-
-			validRanges[i] = minMaxRange
+		validRanges := [4]int{}
+		for i, rawRange := range rawRanges[1:] {
+			value, _ := strconv.Atoi(rawRange)
+			validRanges[i] = value
 		}
 
 		ticketFields[label] = validRanges
@@ -190,11 +183,12 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 		isValid := false
 
 		for _, fieldRanges := range ticketFields {
-			for _, validRange := range fieldRanges {
-				if value >= validRange[0] && value <= validRange[1] {
-					isValid = true
-					break
-				}
+			isRangeA := value >= fieldRanges[0] && value <= fieldRanges[1]
+			isRangeB := value >= fieldRanges[2] && value <= fieldRanges[3]
+
+			if isRangeA || isRangeB {
+				isValid = true
+				break
 			}
 		}
 
