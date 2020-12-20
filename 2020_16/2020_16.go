@@ -8,11 +8,14 @@ import "strings"
 import "advent_of_code/utils"
 
 type ticketFields map[string][4]int
-
 type puzzleInput struct {
 	ticketFields ticketFields
 	ticket       []int
 	tickets      [][]int
+}
+type fieldPossibles struct {
+	label     string
+	possibles []int
 }
 
 func (p *puzzleInput) getValidTickets() [][]int {
@@ -27,11 +30,6 @@ func (p *puzzleInput) getValidTickets() [][]int {
 	}
 
 	return validTickets
-}
-
-type fieldPossibles struct {
-	label     string
-	possibles []int
 }
 
 func (p *puzzleInput) getFieldPossibles() []fieldPossibles {
@@ -155,26 +153,24 @@ func processA(input puzzleInput) int {
 }
 
 func processB(input puzzleInput) int {
-	final := map[string]int{}
+	labelRe := regexp.MustCompile(`departure`)
 	used := map[int]bool{}
+	result := 1
 
 	orderedPossibles := input.getFieldPossibles()
 
 	for _, fieldPossibles := range orderedPossibles {
 		for _, possible := range fieldPossibles.possibles {
-			if !used[possible] {
-				final[fieldPossibles.label] = possible
-				used[possible] = true
+			if used[possible] {
+				continue
 			}
-		}
-	}
 
-	result := 1
-	labelRe := regexp.MustCompile(`departure`)
+			if labelRe.MatchString(fieldPossibles.label) {
+				result *= input.ticket[possible]
+			}
 
-	for label, index := range final {
-		if labelRe.MatchString(label) {
-			result *= input.ticket[index]
+			used[possible] = true
+
 		}
 	}
 
