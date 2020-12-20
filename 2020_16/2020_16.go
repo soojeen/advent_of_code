@@ -94,7 +94,11 @@ func processA(input puzzleInput) int {
 	result := 0
 
 	for _, ticket := range input.tickets {
-		result += invalidValue(ticket, input.ticketFields)
+		value := invalidValue(ticket, input.ticketFields)
+
+		if value >= 0 {
+			result += value
+		}
 	}
 
 	return result
@@ -103,33 +107,48 @@ func processA(input puzzleInput) int {
 func processB(input puzzleInput) int {
 	result := 1
 	validTickets := [][]int{}
-	labelRe := regexp.MustCompile(`departure`)
+	// labelRe := regexp.MustCompile(`departure`)
 
 	for _, ticket := range input.tickets {
 		invalid := invalidValue(ticket, input.ticketFields)
 
-		if invalid == 0 {
+		if invalid == -1 {
 			validTickets = append(validTickets, ticket)
 		}
 	}
 
-	fmt.Println("b:", len(validTickets))
-	fmt.Println("b:", validTickets)
+	tracker := map[string][]int{}
+	for label, fieldRanges := range input.ticketFields {
+		valids := []int{}
 
-	for i := 0; i < len(input.ticket); i++ {
-		values := make([]int, len(validTickets))
+		for i := 0; i < len(input.ticket); i++ {
+			values := make([]int, len(validTickets))
 
-		for j, ticket := range validTickets {
-			values[j] = ticket[i]
+			for j, ticket := range validTickets {
+				values[j] = ticket[i]
+			}
+
+			isValid := true
+
+			for _, value := range values {
+				isInRangeA := value >= fieldRanges[0][0] && value <= fieldRanges[0][1]
+				isInRangeB := value >= fieldRanges[1][0] && value <= fieldRanges[1][1]
+
+				if !isInRangeA && !isInRangeB {
+					isValid = false
+					break
+				}
+			}
+
+			if isValid {
+				valids = append(valids, i)
+			}
 		}
 
-		label := validField(values, input.ticketFields)
-		fmt.Println("b:", i, label)
-
-		if labelRe.MatchString(label) {
-			result *= input.ticket[i]
-		}
+		tracker[label] = valids
 	}
+
+	fmt.Println("b:", tracker)
 
 	return result
 }
@@ -152,7 +171,7 @@ func invalidValue(input []int, ticketFields ticketFields) int {
 		}
 	}
 
-	return 0
+	return -1
 }
 
 func validField(input []int, ticketFields ticketFields) string {
