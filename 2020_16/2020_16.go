@@ -19,9 +19,9 @@ func (p *puzzleInput) getValidTickets() [][]int {
 	validTickets := [][]int{}
 
 	for _, ticket := range p.tickets {
-		invalid := invalidValue(ticket, p.ticketFields)
+		invalid := invalidTicket(ticket, p.ticketFields)
 
-		if invalid == -1 {
+		if !invalid {
 			validTickets = append(validTickets, ticket)
 		}
 	}
@@ -134,10 +134,12 @@ func processA(input puzzleInput) int {
 	result := 0
 
 	for _, ticket := range input.tickets {
-		value := invalidValue(ticket, input.ticketFields)
+		for _, value := range ticket {
+			invalid := invalidValue(value, input.ticketFields)
 
-		if value > 0 {
-			result += value
+			if invalid > 0 {
+				result += invalid
+			}
 		}
 	}
 
@@ -178,26 +180,29 @@ func processB(input puzzleInput) int {
 	return result
 }
 
-func invalidValue(input []int, ticketFields ticketFields) int {
-	for _, value := range input {
-		isValid := false
+func invalidValue(input int, ticketFields ticketFields) int {
+	for _, fieldRanges := range ticketFields {
+		isRangeA := input >= fieldRanges[0] && input <= fieldRanges[1]
+		isRangeB := input >= fieldRanges[2] && input <= fieldRanges[3]
 
-		for _, fieldRanges := range ticketFields {
-			isRangeA := value >= fieldRanges[0] && value <= fieldRanges[1]
-			isRangeB := value >= fieldRanges[2] && value <= fieldRanges[3]
-
-			if isRangeA || isRangeB {
-				isValid = true
-				break
-			}
-		}
-
-		if !isValid {
-			return value
+		if isRangeA || isRangeB {
+			return -1
 		}
 	}
 
-	return -1
+	return input
+}
+
+func invalidTicket(input []int, ticketFields ticketFields) bool {
+	for _, value := range input {
+		invalid := invalidValue(value, ticketFields)
+
+		if invalid != -1 {
+			return true
+		}
+	}
+
+	return false
 }
 
 func getValuesForIndex(input [][]int, index int) []int {
