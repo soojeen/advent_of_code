@@ -18,8 +18,8 @@ func main() {
 
 	input := parseInput(rawInput)
 
-	resultA := processA(input)
-	resultB := processB(input)
+	resultA := sumHomework(input)
+	resultB := sumHomework(input)
 
 	fmt.Println("a:", resultA)
 	fmt.Println("b:", resultB)
@@ -29,90 +29,51 @@ func parseInput(input string) []string {
 	return strings.Split(input, "\n")
 }
 
-func processA(input []string) int {
+func sumHomework(input []string) int {
 	result := 0
 
 	for _, line := range input {
-		value := processLine(line, mathEvalInOrder)
+		lineValue := processLine(line)
+		value, _ := strconv.Atoi(lineValue)
 		result += value
 	}
 
 	return result
 }
 
-func processB(input []string) int {
-	result := 0
-
-	for _, line := range input {
-		value := processLine(line, mathEvalB)
-		result += value
-	}
-
-	return result
-}
-
-func processLine(input string, mathEval func(string) int) int {
+func processLine(input string) string {
 	bracketRe := regexp.MustCompile(`\(([+*\d ]*)\)`)
+	inOrderRe := regexp.MustCompile(`\d* [+*] \d*`)
 
 	for {
-		matches := bracketRe.FindStringSubmatch(input)
+		bracketMatches := bracketRe.FindStringSubmatch(input)
 
-		if len(matches) == 0 {
-			return mathEval(input)
-		}
-
-		value := mathEval(matches[1])
-		replacer := strconv.Itoa(value)
-		input = strings.Replace(input, matches[0], replacer, 1)
-	}
-}
-
-func mathEvalInOrder(input string) int {
-	operands := strings.Split(input, " ")
-	operator := add
-	result := 0
-
-	for _, operand := range operands {
-		if operand == add || operand == mul {
-			operator = operand
+		if len(bracketMatches) > 0 {
+			value := processLine(bracketMatches[1])
+			input = strings.Replace(input, bracketMatches[0], value, 1)
 			continue
 		}
 
-		value, _ := strconv.Atoi(operand)
+		inOrderMatches := inOrderRe.FindString(input)
 
-		if operator == add {
-			result += value
-		} else if operator == mul {
-			result *= value
-		}
-
-		operator = ""
-	}
-
-	return result
-}
-
-func mathEvalB(input string) int {
-	operands := strings.Split(input, " ")
-	operator := add
-	result := 0
-
-	for _, operand := range operands {
-		if operand == add || operand == mul {
-			operator = operand
+		if len(inOrderMatches) > 0 {
+			value := mathEval(inOrderMatches)
+			input = strings.Replace(input, inOrderMatches, value, 1)
 			continue
 		}
 
-		value, _ := strconv.Atoi(operand)
+		return input
+	}
+}
 
-		if operator == add {
-			result += value
-		} else if operator == mul {
-			result *= value
-		}
+func mathEval(input string) string {
+	operands := strings.Split(input, " ")
+	operandA, _ := strconv.Atoi(operands[0])
+	operandB, _ := strconv.Atoi(operands[2])
 
-		operator = ""
+	if operands[1] == add {
+		return strconv.Itoa(operandA + operandB)
 	}
 
-	return result
+	return strconv.Itoa(operandA * operandB)
 }
