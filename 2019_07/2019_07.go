@@ -6,6 +6,9 @@ import "advent_of_code/intcomp"
 import "advent_of_code/permutations"
 import "advent_of_code/utils"
 
+// see here for inspiration
+// https://github.com/hluk/advent-of-code-2019-golang/blob/master/07/advent07.go
+
 func main() {
 	rawInput, err := utils.ReadInput("input.txt")
 	if err != nil {
