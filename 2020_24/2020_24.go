@@ -5,7 +5,37 @@ import "log"
 import "strings"
 import "advent_of_code/utils"
 
-type axial [2]int
+type axial struct {
+	q int
+	r int
+}
+
+type pendingValue struct {
+	current bool
+	pending bool
+}
+
+type axialMap struct {
+	axials map[axial]pendingValue
+	count  int
+}
+
+func (a *axial) translate(input axial) {
+	a.q += input.q
+	a.r += input.r
+}
+
+func (a *axialMap) applyPending() {
+	for _, axialValue := range a.axials {
+		if axialValue.pending && !axialValue.current {
+			a.count++
+		} else if !axialValue.pending && axialValue.current {
+			a.count--
+		}
+
+		axialValue.current = axialValue.pending
+	}
+}
 
 func main() {
 	rawInput, readError := utils.ReadInput("input.txt")
@@ -15,68 +45,79 @@ func main() {
 
 	input := parseInput(rawInput)
 
-	resultA := flipTiles(input)
-	// resultB := sumHomework(input, true)
+	resultA, initialState := flipTiles(input)
+	resultB := multipleFlips(initialState)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
+	fmt.Println("b:", resultB)
 }
 
 func parseInput(input string) []string {
 	return strings.Split(input, "\n")
 }
 
-func flipTiles(input []string) int {
-	axials := make([]axial, len(input))
+func flipTiles(input []string) (int, axialMap) {
+	axialMap := axialMap{make(map[axial]pendingValue), 0}
 
-	for i, line := range input {
-		axials[i] = findTile(line)
+	for _, line := range input {
+		axial := findTile(line)
+		pendingValue := pendingValue{false, true}
+
+		if axialMap.axials[axial].pending {
+			pendingValue.pending = false
+		}
+
+		axialMap.axials[axial] = pendingValue
 	}
 
-	result := countTileFlips(axials)
-	return result
+	axialMap.applyPending()
+
+	return axialMap.count, axialMap
 }
 
 func findTile(input string) axial {
-	axial := axial{0, 0}
-	var prev rune
+	compassAxial := getCompassAxial()
+	current := axial{0, 0}
+	direction := ""
+	skipNext := false
 
-	for _, char := range input {
-		switch char {
-		case 'e':
-			if prev != 's' {
-				axial[0]--
-			}
-		case 'w':
-			if prev != 'n' {
-				axial[0]++
-			}
-		case 's':
-			axial[1]--
-		case 'n':
-			axial[1]++
+	for i, char := range input {
+		if skipNext {
+			skipNext = false
+			continue
 		}
 
-		prev = char
+		if char == 'e' || char == 'w' {
+			direction = string(char)
+		} else {
+			direction = string([]rune{char, rune(input[i+1])})
+			skipNext = true
+		}
+
+		axialTranslation := compassAxial[direction]
+		current.translate(axialTranslation)
 	}
 
-	return axial
+	return current
 }
 
-func countTileFlips(input []axial) int {
-	counts := make(map[axial]int)
-
-	for _, axial := range input {
-		counts[axial]++
+func getCompassAxial() map[string]axial {
+	result := map[string]axial{
+		"e":  axial{1, 0},
+		"w":  axial{-1, 0},
+		"se": axial{0, 1},
+		"sw": axial{-1, 1},
+		"ne": axial{1, -1},
+		"nw": axial{0, -1},
 	}
 
-	flipCount := 0
+	return result
+}
 
-	for _, count := range counts {
-		if count%2 == 1 {
-			flipCount++
-		}
+func multipleFlips(input axialMap) int {
+	for i := 0; i < 100; i++ {
+		// pendingAxials := make(map[string]axial)
 	}
 
-	return flipCount
+	return 0
 }
