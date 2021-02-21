@@ -10,7 +10,6 @@ func main() {
 	resultA := findEncryptionKey(publicKeys)
 
 	fmt.Println("a:", resultA)
-	// fmt.Println("b:", resultB)
 }
 
 const subject = 7
@@ -18,21 +17,40 @@ const initialValue = 1
 const divisor = 20201227
 
 func findEncryptionKey(input publicKeys) int {
-	value := initialValue
+	loopSizeA := findLoopSize(input[0])
+	loopSizeB := findLoopSize(input[1])
 
-	loopSize := 1
+	keyA := transform(input[0], loopSizeB)
+	keyB := transform(input[1], loopSizeA)
 
-	for {
-		value = value * subject
-		value = value % divisor
-		fmt.Println("value:", value, "loop:", loopSize)
-
-		loopSize++
-
-		if loopSize == 100 {
-			break
-		}
+	if keyA == keyB {
+		return keyA
 	}
 
 	return 0
+}
+
+func transform(subject int, loopSize int) int {
+	value := initialValue
+
+	for i := 0; i < loopSize; i++ {
+		value = (value * subject) % divisor
+	}
+
+	return value
+}
+
+func findLoopSize(input int) int {
+	value := initialValue
+	loopSize := 1
+
+	for {
+		value = (value * subject) % divisor
+
+		if value == input {
+			return loopSize
+		}
+
+		loopSize++
+	}
 }
