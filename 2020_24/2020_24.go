@@ -25,6 +25,53 @@ func (a *axial) translate(input axial) {
 	a.r += input.r
 }
 
+func (a *axialMap) getAdjacent(input axial) axialMap {
+	result := axialMap{make(map[axial]pendingValue), 0}
+	compassAxial := getCompassAxial()
+
+	for _, directionAxial := range compassAxial {
+		adjacentAxial := translateAxial(input, directionAxial)
+		result.axials[adjacentAxial] = a.axials[adjacentAxial]
+
+		if a.axials[adjacentAxial].current == true {
+			result.count++
+		}
+	}
+
+	return result
+}
+
+func (a *axialMap) dayFlip() {
+	for axial, axialValue := range a.axials {
+		if axialValue.current == false {
+			continue
+		}
+
+		adjacent := a.getAdjacent(axial)
+		outerPendingValue := pendingValue{true, true}
+
+		if adjacent.count >= 2 {
+			outerPendingValue.pending = false
+		}
+		a.axials[axial] = outerPendingValue
+
+		for adjacentAxial, adjacentAxialValue := range adjacent.axials {
+			if adjacentAxialValue.current == true {
+				continue
+			}
+
+			nestedAdjacent := a.getAdjacent(adjacentAxial)
+			nestedPendingValue := pendingValue{false, false}
+
+			if nestedAdjacent.count == 2 {
+				nestedPendingValue.pending = true
+			}
+
+			a.axials[adjacentAxial] = nestedPendingValue
+		}
+	}
+}
+
 func (a *axialMap) applyPending() {
 	for _, axialValue := range a.axials {
 		if axialValue.pending && !axialValue.current {
@@ -114,10 +161,16 @@ func getCompassAxial() map[string]axial {
 	return result
 }
 
+func translateAxial(input axial, translator axial) axial {
+	return axial{input.q + translator.q, input.r + translator.r}
+}
+
 func multipleFlips(input axialMap) int {
 	for i := 0; i < 100; i++ {
-		// pendingAxials := make(map[string]axial)
+		fmt.Println("b:", i, input.count)
+		input.dayFlip()
+		input.applyPending()
 	}
 
-	return 0
+	return input.count
 }
