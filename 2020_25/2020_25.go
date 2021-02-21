@@ -13,6 +13,26 @@ func main() {
 	// fmt.Println("b:", resultB)
 }
 
+const subject = 7
+const initialValue = 1
+const divisor = 20201227
+
 func findEncryptionKey(input publicKeys) int {
+	value := initialValue
+
+	loopSize := 1
+
+	for {
+		value = value * subject
+		value = value % divisor
+		fmt.Println("value:", value, "loop:", loopSize)
+
+		loopSize++
+
+		if loopSize == 100 {
+			break
+		}
+	}
+
 	return 0
 }
