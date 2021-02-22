@@ -9,12 +9,10 @@ type axial struct {
 	q int
 	r int
 }
-
 type pendingValue struct {
 	current bool
 	pending bool
 }
-
 type axialMap struct {
 	axials map[axial]pendingValue
 	count  int
@@ -50,7 +48,7 @@ func (a *axialMap) dayFlip() {
 		adjacent := a.getAdjacent(axial)
 		outerPendingValue := pendingValue{true, true}
 
-		if adjacent.count >= 2 {
+		if adjacent.count == 0 || adjacent.count > 2 {
 			outerPendingValue.pending = false
 		}
 		a.axials[axial] = outerPendingValue
@@ -73,14 +71,14 @@ func (a *axialMap) dayFlip() {
 }
 
 func (a *axialMap) applyPending() {
-	for _, axialValue := range a.axials {
+	for axial, axialValue := range a.axials {
 		if axialValue.pending && !axialValue.current {
 			a.count++
 		} else if !axialValue.pending && axialValue.current {
 			a.count--
 		}
 
-		axialValue.current = axialValue.pending
+		a.axials[axial] = pendingValue{axialValue.pending, false}
 	}
 }
 
@@ -167,7 +165,6 @@ func translateAxial(input axial, translator axial) axial {
 
 func multipleFlips(input axialMap) int {
 	for i := 0; i < 100; i++ {
-		fmt.Println("b:", i, input.count)
 		input.dayFlip()
 		input.applyPending()
 	}
