@@ -13,34 +13,39 @@ type pendingValue struct {
 	current bool
 	pending bool
 }
-type axialMap struct {
-	axials map[axial]pendingValue
-	count  int
-}
+type axialMap map[axial]pendingValue
 
 func (a *axial) translate(input axial) {
 	a.q += input.q
 	a.r += input.r
 }
 
-func (a *axialMap) getAdjacent(input axial) axialMap {
-	result := axialMap{make(map[axial]pendingValue), 0}
-	compassAxial := getCompassAxial()
+func (a *axialMap) count() int {
+	result := 0
 
-	for _, directionAxial := range compassAxial {
-		adjacentAxial := translateAxial(input, directionAxial)
-		result.axials[adjacentAxial] = a.axials[adjacentAxial]
-
-		if a.axials[adjacentAxial].current == true {
-			result.count++
+	for _, value := range *a {
+		if value.current {
+			result++
 		}
 	}
 
 	return result
 }
 
+func (a *axialMap) getAdjacent(input axial) axialMap {
+	result := axialMap{}
+	compassAxial := getCompassAxial()
+
+	for _, directionAxial := range compassAxial {
+		adjacentAxial := translateAxial(input, directionAxial)
+		result[adjacentAxial] = (*a)[adjacentAxial]
+	}
+
+	return result
+}
+
 func (a *axialMap) dayFlip() {
-	for axial, axialValue := range a.axials {
+	for axial, axialValue := range *a {
 		if axialValue.current == false {
 			continue
 		}
@@ -48,12 +53,13 @@ func (a *axialMap) dayFlip() {
 		adjacent := a.getAdjacent(axial)
 		outerPendingValue := pendingValue{true, true}
 
-		if adjacent.count == 0 || adjacent.count > 2 {
+		adjacentCount := adjacent.count()
+		if adjacentCount == 0 || adjacentCount > 2 {
 			outerPendingValue.pending = false
 		}
-		a.axials[axial] = outerPendingValue
+		(*a)[axial] = outerPendingValue
 
-		for adjacentAxial, adjacentAxialValue := range adjacent.axials {
+		for adjacentAxial, adjacentAxialValue := range adjacent {
 			if adjacentAxialValue.current == true {
 				continue
 			}
@@ -61,24 +67,18 @@ func (a *axialMap) dayFlip() {
 			nestedAdjacent := a.getAdjacent(adjacentAxial)
 			nestedPendingValue := pendingValue{false, false}
 
-			if nestedAdjacent.count == 2 {
+			if nestedAdjacent.count() == 2 {
 				nestedPendingValue.pending = true
 			}
 
-			a.axials[adjacentAxial] = nestedPendingValue
+			(*a)[adjacentAxial] = nestedPendingValue
 		}
 	}
 }
 
 func (a *axialMap) applyPending() {
-	for axial, axialValue := range a.axials {
-		if axialValue.pending && !axialValue.current {
-			a.count++
-		} else if !axialValue.pending && axialValue.current {
-			a.count--
-		}
-
-		a.axials[axial] = pendingValue{axialValue.pending, false}
+	for axial, axialValue := range *a {
+		(*a)[axial] = pendingValue{axialValue.pending, false}
 	}
 }
 
@@ -102,22 +102,22 @@ func parseInput(input string) []string {
 }
 
 func flipTiles(input []string) (int, axialMap) {
-	axialMap := axialMap{make(map[axial]pendingValue), 0}
+	axialMap := axialMap{}
 
 	for _, line := range input {
 		axial := findTile(line)
 		pendingValue := pendingValue{false, true}
 
-		if axialMap.axials[axial].pending {
+		if axialMap[axial].pending {
 			pendingValue.pending = false
 		}
 
-		axialMap.axials[axial] = pendingValue
+		axialMap[axial] = pendingValue
 	}
 
 	axialMap.applyPending()
 
-	return axialMap.count, axialMap
+	return axialMap.count(), axialMap
 }
 
 func findTile(input string) axial {
@@ -169,5 +169,5 @@ func multipleFlips(input axialMap) int {
 		input.applyPending()
 	}
 
-	return input.count
+	return input.count()
 }
